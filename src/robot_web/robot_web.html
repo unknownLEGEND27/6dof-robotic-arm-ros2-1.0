@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+</head>
+
+<body>
+
+<h2>Robot Joint Control</h2>
+
+Joint1:
+<input type="range" min="-3.14" max="3.14" step="0.01" id="j1">
+
+Joint2:
+<input type="range" min="-3.14" max="3.14" step="0.01" id="j2">
+
+<p>End Effector Position:</p>
+<div id="pose"></div>
+
+<script>
+
+var ros = new ROSLIB.Ros({
+  url : 'ws://localhost:9090'
+});
+
+var jointPub = new ROSLIB.Topic({
+  ros : ros,
+  name : '/joint_states',
+  messageType : 'sensor_msgs/JointState'
+});
+
+function sendJointState(){
+
+var msg = new ROSLIB.Message({
+  name: ['joint1','joint2','joint3','joint4','joint5','joint6'],
+  position: [
+    parseFloat(j1.value),
+    parseFloat(j2.value),
+    0,0,0,0
+  ]
+});
+
+jointPub.publish(msg);
+}
+
+j1.oninput = sendJointState;
+j2.oninput = sendJointState;
+
+var poseSub = new ROSLIB.Topic({
+  ros : ros,
+  name : '/ee_pose',
+  messageType : 'geometry_msgs/Pose'
+});
+
+poseSub.subscribe(function(message){
+
+document.getElementById("pose").innerHTML =
+"x: "+message.position.x.toFixed(3) +
+"<br>y: "+message.position.y.toFixed(3) +
+"<br>z: "+message.position.z.toFixed(3);
+
+});
+
+</script>
+
+</body>
+</html>

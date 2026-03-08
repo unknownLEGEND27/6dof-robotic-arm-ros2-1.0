@@ -1,0 +1,4 @@
+[console_scripts]
+fk_node = arm_kinematics.fk_node:main
+ik_node = arm_kinematics.ik_node:main
+

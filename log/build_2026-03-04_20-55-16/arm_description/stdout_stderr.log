@@ -1,0 +1,28 @@
+running egg_info
+creating ../../build/arm_description/arm_description.egg-info
+writing ../../build/arm_description/arm_description.egg-info/PKG-INFO
+writing dependency_links to ../../build/arm_description/arm_description.egg-info/dependency_links.txt
+writing entry points to ../../build/arm_description/arm_description.egg-info/entry_points.txt
+writing requirements to ../../build/arm_description/arm_description.egg-info/requires.txt
+writing top-level names to ../../build/arm_description/arm_description.egg-info/top_level.txt
+writing manifest file '../../build/arm_description/arm_description.egg-info/SOURCES.txt'
+reading manifest file '../../build/arm_description/arm_description.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/arm_description/arm_description.egg-info/SOURCES.txt'
+running build
+running install
+running install_data
+creating /home/unknownlegend/arm_ws/install/arm_description/share/ament_index
+creating /home/unknownlegend/arm_ws/install/arm_description/share/ament_index/resource_index
+creating /home/unknownlegend/arm_ws/install/arm_description/share/ament_index/resource_index/packages
+copying resource/arm_description -> /home/unknownlegend/arm_ws/install/arm_description/share/ament_index/resource_index/packages
+copying package.xml -> /home/unknownlegend/arm_ws/install/arm_description/share/arm_description
+creating /home/unknownlegend/arm_ws/install/arm_description/share/arm_description/urdf
+creating /home/unknownlegend/arm_ws/install/arm_description/share/arm_description/rviz
+creating /home/unknownlegend/arm_ws/install/arm_description/share/arm_description/meshes
+creating /home/unknownlegend/arm_ws/install/arm_description/share/arm_description/meshes/collision
+creating /home/unknownlegend/arm_ws/install/arm_description/share/arm_description/meshes/visual
+running install_egg_info
+Copying ../../build/arm_description/arm_description.egg-info to /home/unknownlegend/arm_ws/install/arm_description/lib/python3.10/site-packages/arm_description-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/unknownlegend/arm_ws/build/arm_description/install.log'

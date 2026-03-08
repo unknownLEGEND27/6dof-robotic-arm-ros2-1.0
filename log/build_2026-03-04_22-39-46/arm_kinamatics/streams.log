@@ -1,0 +1,46 @@
+[1.268s] Invoking command in '/home/unknownlegend/arm_ws/src/arm_kinamatics': PYTHONPATH=/home/unknownlegend/arm_ws/build/arm_kinamatics/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/arm_kinamatics build --build-base /home/unknownlegend/arm_ws/build/arm_kinamatics/build install --record /home/unknownlegend/arm_ws/build/arm_kinamatics/install.log --single-version-externally-managed install_data
+[1.548s] running egg_info
+[1.549s] creating ../../build/arm_kinamatics/arm_kinamatics.egg-info
+[1.549s] writing ../../build/arm_kinamatics/arm_kinamatics.egg-info/PKG-INFO
+[1.549s] writing dependency_links to ../../build/arm_kinamatics/arm_kinamatics.egg-info/dependency_links.txt
+[1.550s] writing entry points to ../../build/arm_kinamatics/arm_kinamatics.egg-info/entry_points.txt
+[1.550s] writing requirements to ../../build/arm_kinamatics/arm_kinamatics.egg-info/requires.txt
+[1.550s] writing top-level names to ../../build/arm_kinamatics/arm_kinamatics.egg-info/top_level.txt
+[1.550s] writing manifest file '../../build/arm_kinamatics/arm_kinamatics.egg-info/SOURCES.txt'
+[1.552s] reading manifest file '../../build/arm_kinamatics/arm_kinamatics.egg-info/SOURCES.txt'
+[1.553s] writing manifest file '../../build/arm_kinamatics/arm_kinamatics.egg-info/SOURCES.txt'
+[1.553s] running build
+[1.554s] running build_py
+[1.554s] creating /home/unknownlegend/arm_ws/build/arm_kinamatics/build
+[1.554s] creating /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib
+[1.554s] creating /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] copying arm_kinamatics/dh_transform.py -> /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] copying arm_kinamatics/__init__.py -> /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] copying arm_kinamatics/fk_solver.py -> /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] copying arm_kinamatics/fk_node.py -> /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] copying arm_kinamatics/ik_solver.py -> /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics
+[1.555s] running install
+[1.555s] running install_lib
+[1.556s] creating /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.556s] copying /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics/dh_transform.py -> /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.557s] copying /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics/__init__.py -> /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.557s] copying /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics/fk_solver.py -> /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.557s] copying /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics/fk_node.py -> /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.557s] copying /home/unknownlegend/arm_ws/build/arm_kinamatics/build/lib/arm_kinamatics/ik_solver.py -> /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics
+[1.557s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics/dh_transform.py to dh_transform.cpython-310.pyc
+[1.558s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics/__init__.py to __init__.cpython-310.pyc
+[1.558s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics/fk_solver.py to fk_solver.cpython-310.pyc
+[1.558s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics/fk_node.py to fk_node.cpython-310.pyc
+[1.558s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics/ik_solver.py to ik_solver.cpython-310.pyc
+[1.559s] running install_data
+[1.559s] creating /home/unknownlegend/arm_ws/install/arm_kinamatics/share/ament_index
+[1.559s] creating /home/unknownlegend/arm_ws/install/arm_kinamatics/share/ament_index/resource_index
+[1.559s] creating /home/unknownlegend/arm_ws/install/arm_kinamatics/share/ament_index/resource_index/packages
+[1.559s] copying resource/arm_kinamatics -> /home/unknownlegend/arm_ws/install/arm_kinamatics/share/ament_index/resource_index/packages
+[1.559s] copying package.xml -> /home/unknownlegend/arm_ws/install/arm_kinamatics/share/arm_kinamatics
+[1.559s] running install_egg_info
+[1.561s] Copying ../../build/arm_kinamatics/arm_kinamatics.egg-info to /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages/arm_kinamatics-0.0.0-py3.10.egg-info
+[1.562s] running install_scripts
+[1.584s] Installing fk_node script to /home/unknownlegend/arm_ws/install/arm_kinamatics/lib/arm_kinamatics
+[1.584s] writing list of installed files to '/home/unknownlegend/arm_ws/build/arm_kinamatics/install.log'
+[1.636s] Invoked command in '/home/unknownlegend/arm_ws/src/arm_kinamatics' returned '0': PYTHONPATH=/home/unknownlegend/arm_ws/build/arm_kinamatics/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/unknownlegend/arm_ws/install/arm_kinamatics/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/arm_kinamatics build --build-base /home/unknownlegend/arm_ws/build/arm_kinamatics/build install --record /home/unknownlegend/arm_ws/build/arm_kinamatics/install.log --single-version-externally-managed install_data
