@@ -1,6 +1,0 @@
-[console_scripts]
-fk_node = arm_kinematics.fk_node:main
-home_pose_node = arm_kinematics.home_pose_node:main
-ik_node = arm_kinematics.ik_node:main
-pose_gui = arm_kinematics.pose_gui_node:main
-
