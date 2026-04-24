@@ -12,8 +12,10 @@ arm_kinematics/__init__.py
 arm_kinematics/dh_transform.py
 arm_kinematics/fk_node.py
 arm_kinematics/fk_solver.py
+arm_kinematics/home_pose_node.py
 arm_kinematics/ik_node.py
 arm_kinematics/ik_solver.py
+arm_kinematics/pose_gui_node.py
 resource/arm_kinematics
 test/test_copyright.py
 test/test_flake8.py

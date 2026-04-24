@@ -1,0 +1,50 @@
+[1.489s] Invoking command in '/home/unknownlegend/arm_ws/src/arm_kinematics': PYTHONPATH=/home/unknownlegend/arm_ws/build/arm_kinematics/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/arm_kinematics build --build-base /home/unknownlegend/arm_ws/build/arm_kinematics/build install --record /home/unknownlegend/arm_ws/build/arm_kinematics/install.log --single-version-externally-managed install_data
+[1.831s] running egg_info
+[1.832s] creating ../../build/arm_kinematics/arm_kinematics.egg-info
+[1.832s] writing ../../build/arm_kinematics/arm_kinematics.egg-info/PKG-INFO
+[1.833s] writing dependency_links to ../../build/arm_kinematics/arm_kinematics.egg-info/dependency_links.txt
+[1.833s] writing entry points to ../../build/arm_kinematics/arm_kinematics.egg-info/entry_points.txt
+[1.833s] writing requirements to ../../build/arm_kinematics/arm_kinematics.egg-info/requires.txt
+[1.834s] writing top-level names to ../../build/arm_kinematics/arm_kinematics.egg-info/top_level.txt
+[1.834s] writing manifest file '../../build/arm_kinematics/arm_kinematics.egg-info/SOURCES.txt'
+[1.837s] reading manifest file '../../build/arm_kinematics/arm_kinematics.egg-info/SOURCES.txt'
+[1.838s] writing manifest file '../../build/arm_kinematics/arm_kinematics.egg-info/SOURCES.txt'
+[1.838s] running build
+[1.838s] running build_py
+[1.839s] creating /home/unknownlegend/arm_ws/build/arm_kinematics/build
+[1.840s] creating /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib
+[1.840s] creating /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/dh_transform.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/__init__.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/fk_solver.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/fk_node.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/ik_solver.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.840s] copying arm_kinematics/ik_node.py -> /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics
+[1.841s] running install
+[1.841s] running install_lib
+[1.842s] creating /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/dh_transform.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/__init__.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/fk_solver.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/fk_node.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/ik_solver.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.843s] copying /home/unknownlegend/arm_ws/build/arm_kinematics/build/lib/arm_kinematics/ik_node.py -> /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics
+[1.844s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/dh_transform.py to dh_transform.cpython-310.pyc
+[1.845s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__init__.py to __init__.cpython-310.pyc
+[1.845s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/fk_solver.py to fk_solver.cpython-310.pyc
+[1.845s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/fk_node.py to fk_node.cpython-310.pyc
+[1.846s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/ik_solver.py to ik_solver.cpython-310.pyc
+[1.847s] byte-compiling /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/ik_node.py to ik_node.cpython-310.pyc
+[1.848s] running install_data
+[1.848s] creating /home/unknownlegend/arm_ws/install/arm_kinematics/share/ament_index
+[1.848s] creating /home/unknownlegend/arm_ws/install/arm_kinematics/share/ament_index/resource_index
+[1.849s] creating /home/unknownlegend/arm_ws/install/arm_kinematics/share/ament_index/resource_index/packages
+[1.849s] copying resource/arm_kinematics -> /home/unknownlegend/arm_ws/install/arm_kinematics/share/ament_index/resource_index/packages
+[1.849s] copying package.xml -> /home/unknownlegend/arm_ws/install/arm_kinematics/share/arm_kinematics
+[1.849s] running install_egg_info
+[1.852s] Copying ../../build/arm_kinematics/arm_kinematics.egg-info to /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics-0.0.0-py3.10.egg-info
+[1.853s] running install_scripts
+[1.882s] Installing fk_node script to /home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics
+[1.882s] Installing ik_node script to /home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics
+[1.882s] writing list of installed files to '/home/unknownlegend/arm_ws/build/arm_kinematics/install.log'
+[1.941s] Invoked command in '/home/unknownlegend/arm_ws/src/arm_kinematics' returned '0': PYTHONPATH=/home/unknownlegend/arm_ws/build/arm_kinematics/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/arm_kinematics build --build-base /home/unknownlegend/arm_ws/build/arm_kinematics/build install --record /home/unknownlegend/arm_ws/build/arm_kinematics/install.log --single-version-externally-managed install_data

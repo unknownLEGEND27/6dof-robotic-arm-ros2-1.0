@@ -10,7 +10,6 @@ from .ik_solver import inverse_kinematics
 class IKNode(Node):
 
     def __init__(self):
-
         super().__init__('ik_node')
 
         self.target_sub = self.create_subscription(
@@ -27,35 +26,53 @@ class IKNode(Node):
         )
 
         self.dh_params = [
-        [0,0.160,0.150,1.57],
-        [1.57,0.0,0.350,0],
-        [0,0.0,-0.045,1.57],
-        [0,0.361,0,-1.57],
-        [0,0.0,0,1.57],
-        [0,0.104,0.0,0]
+            [0, 0.160, 0.150, 1.57],
+            [1.57, 0.0, 0.350, 0],
+            [0, 0.0, -0.045, 1.57],
+            [0, 0.361, 0, -1.57],
+            [0, 0.0, 0, 1.57],
+            [0, 0.104, 0.0, 0]
         ]
 
-        self.q_current = [0,0,0,0,0,0]
+        self.q_current = np.zeros(6)
 
+    def target_callback(self, msg):
 
-    def target_callback(self,msg):
-
-        target = np.array([
+        # 🔥 Position
+        target_pos = np.array([
             msg.position.x,
             msg.position.y,
             msg.position.z
         ])
 
+        # 🔥 Quaternion (NO conversion to Euler)
+        target_quat = np.array([
+            msg.orientation.x,
+            msg.orientation.y,
+            msg.orientation.z,
+            msg.orientation.w
+        ])
+
+        # 🔥 Normalize quaternion (important)
+        norm = np.linalg.norm(target_quat)
+        if norm == 0:
+            self.get_logger().warn("Received zero quaternion, skipping")
+            return
+        target_quat = target_quat / norm
+
+        # 🔥 Solve IK (new signature)
         q_solution = inverse_kinematics(
-            target,
+            target_pos,
+            target_quat,
             self.q_current,
             self.dh_params
         )
 
-        self.q_current = q_solution
+        # Smooth update (prevents jumping)
+        self.q_current = 0.8 * self.q_current + 0.2 * q_solution
 
+        # 🔥 Publish joint states
         joint_msg = JointState()
-
         joint_msg.header.stamp = self.get_clock().now().to_msg()
 
         joint_msg.name = [
@@ -68,9 +85,8 @@ class IKNode(Node):
         ]
 
         joint_msg.position = q_solution.tolist()
-
-        joint_msg.velocity = [0.0]*6
-        joint_msg.effort = [0.0]*6
+        joint_msg.velocity = [0.0] * 6
+        joint_msg.effort = [0.0] * 6
 
         self.joint_pub.publish(joint_msg)
 
@@ -78,11 +94,9 @@ class IKNode(Node):
 
 
 def main(args=None):
-
     rclpy.init(args=args)
 
     node = IKNode()
-
     rclpy.spin(node)
 
     rclpy.shutdown()

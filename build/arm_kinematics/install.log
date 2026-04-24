@@ -1,13 +1,17 @@
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/dh_transform.py
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/pose_gui_node.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__init__.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/fk_solver.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/fk_node.py
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/home_pose_node.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/ik_solver.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/ik_node.py
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/dh_transform.cpython-310.pyc
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/pose_gui_node.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/__init__.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/fk_solver.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/fk_node.cpython-310.pyc
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/home_pose_node.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/ik_solver.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics/__pycache__/ik_node.cpython-310.pyc
 /home/unknownlegend/arm_ws/install/arm_kinematics/share/ament_index/resource_index/packages/arm_kinematics
@@ -20,4 +24,6 @@
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics-0.0.0-py3.10.egg-info/PKG-INFO
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/python3.10/site-packages/arm_kinematics-0.0.0-py3.10.egg-info/zip-safe
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics/fk_node
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics/home_pose_node
 /home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics/ik_node
+/home/unknownlegend/arm_ws/install/arm_kinematics/lib/arm_kinematics/pose_gui
