@@ -861,6 +861,7 @@ let msgCount = 0;
 let freqInterval = null;
 let trajRunning = false;
 let trajCancelled = false;
+let lastSendTime = 0;   // for speed throttle
 
 // ════════════════════════════════════════════════
 //  THREE.JS SETUP
@@ -872,8 +873,8 @@ renderer.setClearColor(0x000000, 0);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
-camera.position.set(1.2, 0.8, 1.2);
-camera.lookAt(0, 0.3, 0);
+camera.position.set(1.5, 0.6, 0.0);
+camera.lookAt(0.3, 0.3, 0.0);
 
 // Grid
 const grid = new THREE.GridHelper(2, 20, 0x1a2535, 0x1a2535);
@@ -950,15 +951,12 @@ function buildArmVisuals() {
   scene.add(targetMarker);
 }
 
-
 buildArmVisuals();
 
-// Rotate entire scene to match ROS Z-up convention
-const armGroup = new THREE.Group();
-armGroup.rotation.x = -Math.PI / 2;
-scene.add(armGroup);
-
-// DH forward kinematics — returns array of 4×4 matrices
+// DH forward kinematics — returns array of positions in Three.js frame
+// ROS frame: X=forward, Y=left, Z=up
+// Three.js frame: X=right, Y=up, Z=toward viewer
+// Conversion: THREE.x = ROS.x, THREE.y = ROS.z, THREE.z = -ROS.y
 function dhFK(joints) {
   const positions = [new THREE.Vector3(0,0,0)];
   let T = new THREE.Matrix4();
@@ -975,12 +973,47 @@ function dhFK(joints) {
        0,      0,      0,    1
     );
     T.multiply(Ti);
+    // Extract ROS-frame position, remap to Three.js Y-up
     const rx = T.elements[12];
     const ry = T.elements[13];
     const rz = T.elements[14];
     positions.push(new THREE.Vector3(rx, rz, -ry));
   }
   return positions;
+}
+
+function getEEOrientation(joints) {
+  let T = new THREE.Matrix4();
+  for(let i=0; i<6; i++){
+    const [theta0, d, a, alpha] = DH[i];
+    const theta = joints[i] + theta0;
+    const ct = Math.cos(theta), st = Math.sin(theta);
+    const ca = Math.cos(alpha), sa = Math.sin(alpha);
+    const Ti = new THREE.Matrix4().set(
+      ct, -st*ca,  st*sa, a*ct,
+      st,  ct*ca, -ct*sa, a*st,
+       0,     sa,     ca,    d,
+       0,      0,      0,    1
+    );
+    T.multiply(Ti);
+  }
+  // Three.js Matrix4.elements is column-major: T.elements[col*4 + row]
+  const r11 = T.elements[0],  r12 = T.elements[4];
+  const r21 = T.elements[1],  r22 = T.elements[5];
+  const r31 = T.elements[2],  r32 = T.elements[6],  r33 = T.elements[10];
+
+  // ZYX intrinsic Euler (ROS RPY convention)
+  let roll, pitch, yaw;
+  if (Math.abs(r31) < 0.9999) {
+    pitch = Math.asin(-r31);
+    roll  = Math.atan2(r32, r33);
+    yaw   = Math.atan2(r21, r11);
+  } else {
+    pitch = -Math.PI / 2 * Math.sign(r31);
+    roll  = 0;
+    yaw   = Math.atan2(-r12, r22);
+  }
+  return { roll, pitch, yaw };
 }
 
 function updateArmVisuals(joints, targetPositions) {
@@ -1012,15 +1045,26 @@ function updateArmVisuals(joints, targetPositions) {
   }
 
   // Update live EE display
+  // ee is in Three.js frame (Y-up): ee.x=ROS_X, ee.y=ROS_Z(up), ee.z=-ROS_Y
+  // Convert back to ROS frame for display to match RViz
   const ee = positions[6];
-  document.getElementById('live-x').textContent = ee.x.toFixed(3);
-  document.getElementById('live-y').textContent = (-ee.z).toFixed(3);
-  document.getElementById('live-z').textContent = ee.y.toFixed(3);
-  document.getElementById('ee-x').textContent = ee.x.toFixed(3);
-  document.getElementById('ee-y').textContent =(-ee.z).toFixed(3);
-  document.getElementById('ee-z').textContent = ee.y.toFixed(3);
+  const ros_x =  ee.x;
+  const ros_y = -ee.z;
+  const ros_z =  ee.y;
+  // document.getElementById('live-x').textContent = ros_x.toFixed(3);
+  // document.getElementById('live-y').textContent = ros_y.toFixed(3);
+  // document.getElementById('live-z').textContent = ros_z.toFixed(3);
+  // document.getElementById('ee-x').textContent = ros_x.toFixed(3);
+  // document.getElementById('ee-y').textContent = ros_y.toFixed(3);
+  // document.getElementById('ee-z').textContent = ros_z.toFixed(3);
 
-  // Distance to target 
+    // Live EE orientation (real RPY, not joint angles)
+  const rpy = getEEOrientation(joints);
+  document.getElementById('live-r').textContent  = (rpy.roll  * 180/Math.PI).toFixed(2);
+  document.getElementById('live-p').textContent  = (rpy.pitch * 180/Math.PI).toFixed(2);
+  document.getElementById('live-yw').textContent = (rpy.yaw   * 180/Math.PI).toFixed(2);
+
+  // Distance to target (both in Three.js frame)
   const tgt = new THREE.Vector3(targetPose.x, targetPose.z, -targetPose.y);
   const dist = ee.distanceTo(tgt);
   document.getElementById('hdr-dist').textContent = dist.toFixed(3);
@@ -1029,7 +1073,7 @@ function updateArmVisuals(joints, targetPositions) {
 // Orbit controls (minimal, no import needed)
 let isDragging = false, isRightDrag = false;
 let lastMouse = {x:0,y:0};
-let spherical = {theta: Math.PI/4, phi: Math.PI/3.5, r: 2.0};
+let spherical = {theta: Math.PI/2, phi: Math.PI/2.8, r: 2.0};
 let panOffset = new THREE.Vector3();
 
 canvas.addEventListener('mousedown', e => {
@@ -1281,11 +1325,11 @@ function updateJointBars(joints) {
     bar.className = 'joint-bar-fill' + (absRatio>0.9?' danger':(absRatio>0.75?' warn':''));
     val.textContent = (joints[i]*180/Math.PI).toFixed(1)+'°';
 
-    if(i < 3){
-      document.getElementById(`live-r`).textContent = (joints[3]*180/Math.PI).toFixed(2);
-      document.getElementById(`live-p`).textContent = (joints[4]*180/Math.PI).toFixed(2);
-      document.getElementById(`live-yw`).textContent= (joints[5]*180/Math.PI).toFixed(2);
-    }
+    // if(i < 3){
+    //   document.getElementById(`live-r`).textContent = (joints[3]*180/Math.PI).toFixed(2);
+    //   document.getElementById(`live-p`).textContent = (joints[4]*180/Math.PI).toFixed(2);
+    //   document.getElementById(`live-yw`).textContent= (joints[5]*180/Math.PI).toFixed(2);
+    // }
   }
 }
 
@@ -1304,21 +1348,31 @@ function eulerToQuat(roll,pitch,yaw){
   };
 }
 
-function sendPose(pose) {
+function sendPose(pose, force) {
   const p = pose || getControlValues();
-  const q = eulerToQuat(p.roll, p.pitch, p.yaw);
   const speed = parseFloat(document.getElementById('speed-slider').value);
 
+  // Throttle: minimum interval between publishes scales inversely with speed.
+  // speed 1.0× → 50 ms interval (20 Hz)
+  // speed 0.1× → 500 ms interval (2 Hz)
+  // speed 2.0× → 25 ms interval (40 Hz)
+  // `force` (e.g. button clicks) bypasses the throttle.
+  const minInterval = 50 / speed;
+  const now = Date.now();
+  if (!force && (now - lastSendTime) < minInterval) return;
+  lastSendTime = now;
+
+  const q = eulerToQuat(p.roll, p.pitch, p.yaw);
   const msg = {
     position: {x:p.x, y:p.y, z:p.z},
     orientation: q
   };
 
-  rosPublish('/target_pose','geometry_msgs/Pose', msg);
+  rosPublish('/target_pose', 'geometry_msgs/Pose', msg);
 
   document.getElementById('ik-badge').textContent = 'IK SOLVING';
   document.getElementById('ik-badge').style.color = 'var(--warn)';
-  setTimeout(()=>{
+  setTimeout(() => {
     document.getElementById('ik-badge').textContent = 'IK OK';
     document.getElementById('ik-badge').style.color = 'var(--accent)';
   }, 600);
@@ -1326,21 +1380,43 @@ function sendPose(pose) {
 
 function goHome() {
   setControlValues({x:0.615,y:0.0,z:0.55,roll:0,pitch:0,yaw:0});
-  sendPose();
+  sendPose(null, true);
 }
 
 function goZero() {
   setControlValues({x:0.5,y:0.0,z:0.4,roll:0,pitch:0,yaw:0});
-  sendPose();
+  sendPose(null, true);
 }
+
+// function eStop() {
+//   trajCancelled = true;
+//   // Publish zero velocity or re-send current pose
+//   rosPublish('/target_pose','geometry_msgs/Pose',{
+//     position:{x:currentJoints[0],y:currentJoints[1],z:currentJoints[2]},
+//     orientation:{x:0,y:0,z:0,w:1}
+//   });
+//   document.getElementById('traj-status').textContent = '⚠ E-STOP TRIGGERED';
+//   document.getElementById('traj-status').style.color = 'var(--danger)';
+// }
 
 function eStop() {
   trajCancelled = true;
-  // Publish zero velocity or re-send current pose
-  rosPublish('/target_pose','geometry_msgs/Pose',{
-    position:{x:currentJoints[0],y:currentJoints[1],z:currentJoints[2]},
-    orientation:{x:0,y:0,z:0,w:1}
+
+  // Compute current EE position from FK on the current joint angles,
+  // then re-target it. This freezes the arm at exactly where it is now.
+  const positions = dhFK(currentJoints);
+  const ee = positions[6];
+
+  // Convert from Three.js axes (rx, rz, -ry) back to ROS axes (x, y, z)
+  const ros_x = ee.x;
+  const ros_y = -ee.z;
+  const ros_z = ee.y;
+
+  rosPublish('/target_pose', 'geometry_msgs/Pose', {
+    position:    { x: ros_x, y: ros_y, z: ros_z },
+    orientation: { x: 0, y: 0, z: 0, w: 1 }
   });
+
   document.getElementById('traj-status').textContent = '⚠ E-STOP TRIGGERED';
   document.getElementById('traj-status').style.color = 'var(--danger)';
 }
@@ -1352,7 +1428,7 @@ function loadPreset(key) {
   const p = key==='home' ? presets.home : key==='zero' ? presets.zero : customPresets[key];
   if(!p) return;
   setControlValues(p);
-  sendPose(p);
+  sendPose(p, true);
 }
 
 function saveCurrentAsPreset(slot) {
@@ -1454,7 +1530,7 @@ async function executeTrajectory() {
       status.style.color = 'var(--accent3)';
 
       setControlValues(waypoints[i]);
-      sendPose(waypoints[i]);
+      sendPose(waypoints[i], true);
       await sleep(400 + dwell);
     }
     if(trajCancelled) break;

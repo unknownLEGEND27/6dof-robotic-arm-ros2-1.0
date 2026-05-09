@@ -11,6 +11,12 @@ def generate_launch_description():
         'urdf',
         'dof6arm.urdf'
     ])
+    
+    rviz_config = PathJoinSubstitution([
+        FindPackageShare('dof6arm'),
+        'rviz',
+        'default.rviz'    
+    ])
 
     robot_description = ParameterValue(
         Command(['cat ', urdf_file]),

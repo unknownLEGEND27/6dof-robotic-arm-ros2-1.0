@@ -53,11 +53,25 @@ def generate_launch_description():
     )
 
     # ✅ Open interface with 1 sec delay
+    # open_interface = TimerAction(
+    #     period=1.0,
+    #     actions=[
+    #         ExecuteProcess(
+    #             cmd=['xdg-open', os.path.expanduser('~/arm_ws/src/interface.html')],
+    #             output='screen'
+    #         )
+    #     ]
+    # )
+    
+    # Open interface.html (resolved from arm_bringup share dir, no hardcoded path)
+    arm_bringup_path = get_package_share_directory('arm_bringup')
+    interface_path = os.path.join(arm_bringup_path, 'web', 'interface.html')
+
     open_interface = TimerAction(
         period=1.0,
         actions=[
             ExecuteProcess(
-                cmd=['xdg-open', os.path.expanduser('~/arm_ws/src/interface.html')],
+                cmd=['xdg-open', interface_path],
                 output='screen'
             )
         ]
