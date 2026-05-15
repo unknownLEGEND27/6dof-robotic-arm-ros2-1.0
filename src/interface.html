@@ -3,828 +3,591 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6DOF ARM CONTROL</title>
+<title>NEURALINK · 6DOF</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
 :root {
-  --bg:        #080c10;
-  --panel:     #0d1117;
-  --border:    #1a2535;
-  --accent:    #00d4ff;
-  --accent2:   #ff6b35;
-  --accent3:   #39ff14;
-  --warn:      #ffcc00;
-  --danger:    #ff2d55;
-  --text:      #c8d8e8;
-  --muted:     #4a6080;
-  --glass:     rgba(13,17,23,0.85);
+  --bg-0: #050610;
+  --bg-1: #0a0c18;
+  --bg-2: #111422;
+  --bg-3: #181c2e;
+  --border-1: rgba(255,255,255,0.06);
+  --border-2: rgba(255,255,255,0.12);
+  --border-3: rgba(255,255,255,0.20);
+  --text-1: #ffffff;
+  --text-2: rgba(255,255,255,0.72);
+  --text-3: rgba(255,255,255,0.42);
+  --text-4: rgba(255,255,255,0.22);
+  --pink:    #ff006e;
+  --purple:  #8338ec;
+  --blue:    #3a86ff;
+  --cyan:    #00f5d4;
+  --green:   #06ffa5;
+  --warn:    #ffbe0b;
+  --danger:  #ff2e63;
+  --grad: linear-gradient(135deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%);
+  --grad-soft: linear-gradient(135deg, rgba(255,0,110,0.15), rgba(131,56,236,0.15), rgba(58,134,255,0.15));
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 14px;
+html, body {
   height: 100vh;
   overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
   display: grid;
-  grid-template-rows: 52px 1fr 110px;
-  grid-template-columns: 300px 1fr 300px;
-  gap: 0;
-}
-
-/* ── SCANLINE OVERLAY ── */
-body::before {
-  content:'';
-  position:fixed; inset:0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.015) 2px, rgba(0,212,255,0.015) 4px);
-  pointer-events:none; z-index:9999;
-}
-
-/* ── HEADER ── */
-header {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel);
+  grid-template-rows: 60px 1fr 132px;
+  grid-template-columns: 340px 1fr 340px;
   position: relative;
+}
+
+.aurora {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
   overflow: hidden;
 }
-
-header::after {
+.aurora::before, .aurora::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: scanH 3s linear infinite;
-}
-
-@keyframes scanH { 0%{opacity:0.3} 50%{opacity:1} 100%{opacity:0.3} }
-
-.logo {
-  font-family: 'Orbitron', monospace;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: var(--accent);
-  text-shadow: 0 0 20px rgba(0,212,255,0.5);
-}
-
-.logo span { color: var(--accent2); }
-
-.header-center {
-  display: flex;
-  gap: 24px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.stat-item { display:flex; gap:6px; align-items:center; }
-.stat-val { color: var(--accent3); font-size:13px; }
-
-.conn-group { display:flex; gap:12px; align-items:center; }
-
-.conn-dot {
-  width: 8px; height: 8px;
+  width: 800px; height: 800px;
   border-radius: 50%;
-  background: var(--danger);
-  box-shadow: 0 0 8px var(--danger);
-  transition: all 0.3s;
+  filter: blur(120px);
+  opacity: 0.45;
+  animation: floatBlob 25s ease-in-out infinite;
 }
-.conn-dot.connected {
-  background: var(--accent3);
-  box-shadow: 0 0 8px var(--accent3);
-  animation: pulse 2s ease-in-out infinite;
+.aurora::before {
+  background: radial-gradient(circle, var(--pink), transparent 60%);
+  top: -200px; left: -200px;
 }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-
-.conn-label { font-family:'Share Tech Mono',monospace; font-size:11px; }
-
-/* ── LEFT PANEL ── */
-.left-panel {
-  grid-row: 2;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.aurora::after {
+  background: radial-gradient(circle, var(--blue), transparent 60%);
+  bottom: -200px; right: -200px;
+  animation-delay: -12s;
 }
-
-.left-panel::-webkit-scrollbar { width: 4px; }
-.left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
-
-/* ── CENTER PANEL ── */
-.center-panel {
-  grid-row: 2;
-  position: relative;
-  overflow: hidden;
-  background: radial-gradient(ellipse at center, #0a141e 0%, var(--bg) 100%);
+.aurora-mid {
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--purple), transparent 60%);
+  filter: blur(120px);
+  opacity: 0.35;
+  top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatBlob 30s ease-in-out infinite reverse;
+}
+@keyframes floatBlob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -60px) scale(1.1); }
+  66%      { transform: translate(-50px, 40px) scale(0.95); }
 }
 
-#three-canvas { width:100%; height:100%; display:block; }
-
-.viewport-overlay {
-  position: absolute;
-  top: 12px; left: 12px;
-  display: flex;
-  gap: 8px;
+.noise {
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
 }
 
-.badge {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  padding: 3px 8px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  background: var(--glass);
-  backdrop-filter: blur(8px);
-  letter-spacing: 1px;
-}
-
-.reach-badge {
-  border-color: var(--accent3);
-  color: var(--accent3);
-  text-shadow: 0 0 6px var(--accent3);
-}
-.reach-badge.warn { border-color:var(--warn); color:var(--warn); text-shadow:0 0 6px var(--warn); }
-.reach-badge.error { border-color:var(--danger); color:var(--danger); text-shadow:0 0 6px var(--danger); }
-
-.ik-badge {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.viewport-hint {
-  position: absolute;
-  bottom: 12px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  pointer-events:none;
-}
-
-/* ── RIGHT PANEL ── */
-.right-panel {
-  grid-row: 2;
-  background: var(--panel);
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.right-panel::-webkit-scrollbar { width: 4px; }
-.right-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
-
-/* ── BOTTOM BAR ── */
-.bottom-bar {
+header {
   grid-column: 1 / -1;
-  background: var(--panel);
-  border-top: 1px solid var(--border);
-  padding: 10px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.joint-row {
   display: grid;
-  grid-template-columns: 60px 1fr 55px;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 10px;
-}
-
-.joint-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 1px;
-}
-
-.joint-bar-track {
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
+  padding: 0 28px;
+  background: rgba(10,12,24,0.6);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid var(--border-1);
   position: relative;
+  z-index: 10;
 }
 
-.joint-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent3));
-  transition: width 0.15s ease;
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; }
+.brand-mark::before { content: ''; position: absolute; inset: 0; background: var(--grad); border-radius: 8px; filter: blur(10px); opacity: 0.6; }
+.brand-mark::after { content: ''; position: absolute; inset: 0; background: var(--grad); border-radius: 8px; }
+.brand-mark span { position: relative; z-index: 1; font-family: 'Orbitron', monospace; font-weight: 900; font-size: 14px; color: var(--bg-0); }
+.brand-text { display: flex; flex-direction: column; gap: 2px; }
+.brand-name { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 800; letter-spacing: 4px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-3); letter-spacing: 2px; }
+
+.metrics { display: flex; gap: 4px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-1); border-radius: 100px; padding: 4px; }
+.metric { display: flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 100px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.metric:not(:last-child) { border-right: 1px solid var(--border-1); padding-right: 18px; }
+.metric .lbl { color: var(--text-3); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; }
+.metric .val { color: var(--text-1); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.conn { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.conn-dot { width: 36px; height: 36px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: rgba(255,46,99,0.1); border: 1px solid rgba(255,46,99,0.4); }
+.conn-dot::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid var(--danger); animation: connPulse 2.5s ease-out infinite; }
+.conn-dot.connected { background: rgba(6,255,165,0.1); border-color: rgba(6,255,165,0.5); }
+.conn-dot.connected::before { border-color: var(--green); }
+.conn-dot::after { content:''; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 12px var(--danger); }
+.conn-dot.connected::after { background: var(--green); box-shadow: 0 0 12px var(--green); }
+@keyframes connPulse { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
+.conn-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2.5px; color: var(--text-2); }
+
+.panel {
+  grid-row: 2;
   position: relative;
-}
-
-.joint-bar-fill.warn { background: linear-gradient(90deg, var(--warn), var(--accent2)); }
-.joint-bar-fill.danger { background: var(--danger); }
-
-.joint-val {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--text);
-  text-align: right;
-}
-
-/* ── SECTION HEADERS ── */
-.section-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
-}
-
-.section-head .line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.section-head span {
-  font-family: 'Orbitron', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-/* ── AXIS CONTROL ── */
-.axis-group { display:flex; flex-direction:column; gap:10px; }
-
-.axis-row {
+  z-index: 5;
   display: grid;
-  grid-template-columns: 26px 1fr 58px;
-  gap: 8px;
-  align-items: center;
+  grid-template-rows: auto 1fr auto;
+  background: rgba(10,12,24,0.55);
+  backdrop-filter: blur(24px) saturate(160%);
 }
+.panel-left  { border-right: 1px solid var(--border-1); }
+.panel-right { border-left: 1px solid var(--border-1); }
 
-.axis-tag {
-  font-family: 'Orbitron', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  padding: 3px 0;
-  border-radius: 3px;
-}
+.tab-bar { display: flex; padding: 14px 16px 0; gap: 4px; position: relative; }
+.tab { flex: 1; background: transparent; border: none; color: var(--text-3); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 12px 4px; cursor: pointer; position: relative; transition: color 0.25s; }
+.tab:hover { color: var(--text-2); }
+.tab.active { color: var(--text-1); }
+.tab.active::after { content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 60%; height: 2px; background: var(--grad); border-radius: 2px; box-shadow: 0 0 12px rgba(131,56,236,0.6); }
 
-.axis-tag.x { color:#ff4466; background:rgba(255,68,102,0.1); border:1px solid rgba(255,68,102,0.3); }
-.axis-tag.y { color:#44ff88; background:rgba(68,255,136,0.1); border:1px solid rgba(68,255,136,0.3); }
-.axis-tag.z { color:#4488ff; background:rgba(68,136,255,0.1); border:1px solid rgba(68,136,255,0.3); }
-.axis-tag.r { color:#ff8844; background:rgba(255,136,68,0.1); border:1px solid rgba(255,136,68,0.3); }
-.axis-tag.p { color:#cc44ff; background:rgba(204,68,255,0.1); border:1px solid rgba(204,68,255,0.3); }
-.axis-tag.yw { color:#44ccff; background:rgba(68,204,255,0.1); border:1px solid rgba(68,204,255,0.3); }
+.tab-content { overflow-y: auto; padding: 18px 18px 12px; display: flex; flex-direction: column; gap: 16px; }
+.tab-content::-webkit-scrollbar { width: 4px; }
+.tab-content::-webkit-scrollbar-thumb { background: var(--border-3); border-radius: 2px; }
+.tab-pane { display: none; flex-direction: column; gap: 16px; animation: fadeIn 0.3s ease; }
+.tab-pane.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-.slider-wrap { position:relative; }
+.glass { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border: 1px solid var(--border-1); border-radius: 14px; padding: 16px; position: relative; overflow: hidden; }
+.glass::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border-3), transparent); }
+.glass-title { display: flex; align-items: center; gap: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 2.5px; color: var(--text-3); text-transform: uppercase; margin-bottom: 14px; }
+.glass-title::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--grad); box-shadow: 0 0 8px rgba(131,56,236,0.6); }
 
-input[type=range] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
+.axis-row { display: grid; grid-template-columns: 32px 1fr 64px; gap: 10px; align-items: center; margin-bottom: 12px; }
+.axis-row:last-child { margin-bottom: 0; }
+.axis-tag { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 800; text-align: center; padding: 6px 0; border-radius: 8px; letter-spacing: 0.5px; }
+.axis-tag.x  { color: #ff5577; background: rgba(255,85,119,0.12); border: 1px solid rgba(255,85,119,0.3); box-shadow: 0 0 12px rgba(255,85,119,0.15); }
+.axis-tag.y  { color: var(--green); background: rgba(6,255,165,0.12); border: 1px solid rgba(6,255,165,0.3); box-shadow: 0 0 12px rgba(6,255,165,0.15); }
+.axis-tag.z  { color: var(--blue); background: rgba(58,134,255,0.12); border: 1px solid rgba(58,134,255,0.3); box-shadow: 0 0 12px rgba(58,134,255,0.15); }
+.axis-tag.r  { color: var(--warn); background: rgba(255,190,11,0.12); border: 1px solid rgba(255,190,11,0.3); box-shadow: 0 0 12px rgba(255,190,11,0.15); }
+.axis-tag.p  { color: var(--purple); background: rgba(131,56,236,0.18); border: 1px solid rgba(131,56,236,0.4); box-shadow: 0 0 12px rgba(131,56,236,0.2); }
+.axis-tag.yw { color: var(--cyan); background: rgba(0,245,212,0.12); border: 1px solid rgba(0,245,212,0.3); box-shadow: 0 0 12px rgba(0,245,212,0.15); }
 
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-  cursor: pointer;
-  transition: transform 0.1s;
-}
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; outline: none; cursor: pointer; position: relative; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: white; cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 4px rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.4); transition: transform 0.15s, box-shadow 0.15s; }
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+input[type=range].x-axis::-webkit-slider-thumb  { background: #ff5577; box-shadow: 0 0 0 4px rgba(255,85,119,0.25), 0 0 16px rgba(255,85,119,0.4); }
+input[type=range].y-axis::-webkit-slider-thumb  { background: var(--green); box-shadow: 0 0 0 4px rgba(6,255,165,0.25), 0 0 16px rgba(6,255,165,0.4); }
+input[type=range].z-axis::-webkit-slider-thumb  { background: var(--blue); box-shadow: 0 0 0 4px rgba(58,134,255,0.25), 0 0 16px rgba(58,134,255,0.4); }
+input[type=range].r-axis::-webkit-slider-thumb  { background: var(--warn); box-shadow: 0 0 0 4px rgba(255,190,11,0.25), 0 0 16px rgba(255,190,11,0.4); }
+input[type=range].p-axis::-webkit-slider-thumb  { background: var(--purple); box-shadow: 0 0 0 4px rgba(131,56,236,0.25), 0 0 16px rgba(131,56,236,0.4); }
+input[type=range].yw-axis::-webkit-slider-thumb { background: var(--cyan); box-shadow: 0 0 0 4px rgba(0,245,212,0.25), 0 0 16px rgba(0,245,212,0.4); }
 
-input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.3); }
-input[type=range].y-axis::-webkit-slider-thumb { background:var(--accent3); box-shadow:0 0 8px var(--accent3); }
-input[type=range].z-axis::-webkit-slider-thumb { background:#4488ff; box-shadow:0 0 8px #4488ff; }
-input[type=range].r-axis::-webkit-slider-thumb { background:var(--accent2); box-shadow:0 0 8px var(--accent2); }
-input[type=range].p-axis::-webkit-slider-thumb { background:#cc44ff; box-shadow:0 0 8px #cc44ff; }
-input[type=range].yw-axis::-webkit-slider-thumb { background:#44ccff; box-shadow:0 0 8px #44ccff; }
+.num-input { background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); color: var(--text-1); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; padding: 6px 8px; border-radius: 6px; width: 100%; text-align: right; outline: none; font-variant-numeric: tabular-nums; transition: all 0.2s; }
+.num-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(131,56,236,0.15); }
 
-.num-input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  padding: 4px 6px;
-  border-radius: 3px;
-  width: 100%;
-  text-align: right;
-  outline: none;
-  transition: border-color 0.2s;
-}
+.row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+.row + .row { border-top: 1px solid var(--border-1); }
+.row-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--text-2); text-transform: uppercase; }
+.toggle { position: relative; width: 42px; height: 24px; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track { position: absolute; inset: 0; background: rgba(255,255,255,0.08); border-radius: 100px; cursor: pointer; transition: background 0.3s; }
+.toggle-track::before { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+.toggle input:checked + .toggle-track { background: var(--grad); box-shadow: 0 0 16px rgba(131,56,236,0.5); }
+.toggle input:checked + .toggle-track::before { transform: translateX(18px); }
 
-.num-input:focus { border-color: var(--accent); box-shadow: 0 0 6px rgba(0,212,255,0.2); }
+.slider-row { display: grid; grid-template-columns: 1fr 50px; gap: 10px; align-items: center; }
+.slider-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; text-align: right; color: var(--cyan); font-variant-numeric: tabular-nums; }
 
-/* ── BUTTONS ── */
-.btn-row { display:flex; gap:8px; }
+.cmd-bar { padding: 14px 16px; border-top: 1px solid var(--border-1); background: rgba(5,6,16,0.85); backdrop-filter: blur(16px); display: grid; gap: 8px; }
+.cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-.btn {
-  flex: 1;
-  font-family: 'Orbitron', monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  padding: 9px 0;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s;
-}
+.btn { position: relative; font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 13px 14px; border: none; border-radius: 10px; cursor: pointer; overflow: hidden; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-1); background: var(--bg-3); border: 1px solid var(--border-1); }
+.btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent); opacity: 0; transition: opacity 0.2s; }
+.btn:hover::before { opacity: 1; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--grad); border: none; color: white; box-shadow: 0 4px 24px rgba(131,56,236,0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+.btn-primary:hover { box-shadow: 0 4px 32px rgba(131,56,236,0.6), inset 0 1px 0 rgba(255,255,255,0.3); }
+.btn-warm { background: linear-gradient(135deg, var(--warn), #ff8a3d); border: none; color: var(--bg-0); box-shadow: 0 4px 24px rgba(255,138,61,0.35), inset 0 1px 0 rgba(255,255,255,0.3); }
+.btn-danger { background: linear-gradient(135deg, var(--danger), #c2185b); border: none; color: white; box-shadow: 0 4px 24px rgba(255,46,99,0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+.btn-ghost { background: rgba(255,255,255,0.04); }
+.btn-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--border-2); }
+.btn-success { background: linear-gradient(135deg, var(--green), #00d489); color: var(--bg-0); border: none; box-shadow: 0 4px 24px rgba(6,255,165,0.35), inset 0 1px 0 rgba(255,255,255,0.3); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn::before {
-  content:'';
-  position:absolute; inset:0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-  opacity:0; transition:opacity 0.2s;
-}
-.btn:hover::before { opacity:1; }
-.btn:active { transform:scale(0.97); }
+.viewport { grid-row: 2; position: relative; z-index: 2; overflow: hidden; }
+#three-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hud { position: absolute; inset: 0; pointer-events: none; }
+.hud-tl, .hud-tr, .hud-bl, .hud-br { position: absolute; display: flex; gap: 8px; pointer-events: auto; }
+.hud-tl { top: 20px; left: 20px; }
+.hud-tr { top: 20px; right: 20px; flex-direction: column; align-items: flex-end; }
+.hud-bl { bottom: 20px; left: 50%; transform: translateX(-50%); }
 
-.btn-primary {
-  background: linear-gradient(135deg, #0080aa, #00d4ff);
-  color: var(--bg);
-  box-shadow: 0 0 15px rgba(0,212,255,0.3);
-}
-.btn-primary:hover { box-shadow: 0 0 25px rgba(0,212,255,0.6); }
+.pill { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; padding: 8px 14px; border-radius: 100px; background: rgba(10,12,24,0.7); backdrop-filter: blur(20px); border: 1px solid var(--border-2); display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+.pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+.pill.warn { color: var(--warn); border-color: rgba(255,190,11,0.4); }
+.pill.warn::before { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.pill.error { color: var(--danger); border-color: rgba(255,46,99,0.4); }
+.pill.error::before { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.pill.info { color: var(--cyan); border-color: rgba(0,245,212,0.4); }
+.pill.info::before { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
-.btn-home {
-  background: linear-gradient(135deg, #aa5500, var(--accent2));
-  color: white;
-  box-shadow: 0 0 15px rgba(255,107,53,0.3);
-}
+.hint { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 2px; background: rgba(10,12,24,0.6); backdrop-filter: blur(20px); padding: 8px 16px; border-radius: 100px; border: 1px solid var(--border-1); }
 
-.btn-danger {
-  background: linear-gradient(135deg, #880022, var(--danger));
-  color: white;
-}
+.ee-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ee-tile { background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); border-radius: 10px; padding: 10px 8px; text-align: center; position: relative; overflow: hidden; }
+.ee-tile::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; border-radius: 2px; }
+.ee-tile.x::after { background: linear-gradient(90deg, transparent, #ff5577, transparent); }
+.ee-tile.y::after { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+.ee-tile.z::after { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+.ee-tile.r::after { background: linear-gradient(90deg, transparent, var(--warn), transparent); }
+.ee-tile.p::after { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+.ee-tile.yw::after { background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+.ee-tile .lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-3); letter-spacing: 2px; display: block; margin-bottom: 6px; text-transform: uppercase; }
+.ee-tile .val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
-}
-.btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+.preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.preset { background: rgba(255,255,255,0.04); border: 1px solid var(--border-1); color: var(--text-1); font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; padding: 11px 10px; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; text-align: left; text-transform: uppercase; }
+.preset:hover { border-color: var(--border-3); background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+.preset .icon { width: 24px; height: 24px; border-radius: 6px; background: var(--grad-soft); display: flex; align-items: center; justify-content: center; color: var(--text-1); font-size: 12px; }
+.preset.empty { color: var(--text-3); border-style: dashed; }
+.preset.empty:hover { color: var(--green); border-color: var(--green); }
 
-.btn-exec {
-  background: linear-gradient(135deg, #003300, var(--accent3));
-  color: var(--bg);
-  box-shadow: 0 0 15px rgba(57,255,20,0.3);
-}
+.wp-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.wp-list::-webkit-scrollbar { width: 3px; }
+.wp-list::-webkit-scrollbar-thumb { background: var(--border-2); }
+.wp { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid var(--border-1); border-radius: 8px; padding: 9px 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+.wp:hover { border-color: var(--purple); transform: translateX(2px); }
+.wp.active { border-color: var(--green); background: rgba(6,255,165,0.06); }
+.wp-num { color: var(--text-3); font-weight: 700; }
+.wp-coords { color: var(--text-1); }
+.wp-del { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 18px; line-height: 1; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.wp-del:hover { color: var(--danger); background: rgba(255,46,99,0.1); }
 
-/* ── SPEED CONTROL ── */
-.speed-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.rec-status { display: flex; align-items: center; gap: 14px; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); border-radius: 10px; }
+.rec-led { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid var(--border-3); flex-shrink: 0; transition: all 0.3s; }
+.rec-led.recording { background: var(--danger); border-color: var(--danger); box-shadow: 0 0 16px var(--danger); animation: recPulse 1.2s ease-in-out infinite; }
+.rec-led.playing { background: var(--green); border-color: var(--green); box-shadow: 0 0 16px var(--green); }
+@keyframes recPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } }
+.rec-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.rec-frames { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums; }
+.rec-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 
-.speed-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  white-space: nowrap;
-}
+.traj-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); text-align: center; padding: 8px; letter-spacing: 1px; }
 
-/* ── PRESET SAVES ── */
-.preset-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
+.bottom { grid-column: 1 / -1; background: rgba(10,12,24,0.7); backdrop-filter: blur(24px) saturate(160%); border-top: 1px solid var(--border-1); padding: 12px 28px; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 5; }
+.bottom-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--text-3); text-align: center; text-transform: uppercase; }
+.joint-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; align-items: center; }
+.joint { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.joint-gauge { width: 56px; height: 56px; position: relative; flex-shrink: 0; }
+.joint-gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.joint-gauge .bg { stroke: rgba(255,255,255,0.06); }
+.joint-gauge .fg { stroke: url(#gauge-gradient); stroke-linecap: round; transition: stroke-dashoffset 0.3s ease; filter: drop-shadow(0 0 4px rgba(131,56,236,0.5)); }
+.joint-gauge .fg.warn { stroke: var(--warn); filter: drop-shadow(0 0 4px var(--warn)); }
+.joint-gauge .fg.danger { stroke: var(--danger); filter: drop-shadow(0 0 4px var(--danger)); }
+.joint-gauge-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; color: var(--text-1); font-variant-numeric: tabular-nums; }
+.joint-info { display: flex; flex-direction: column; }
+.joint-info .name { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 800; color: var(--text-1); letter-spacing: 1px; }
+.joint-info .deg { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 
-.preset-btn {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  padding: 7px 6px;
-  border-radius: 3px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.preset-btn:hover { border-color:var(--accent); color:var(--accent); }
-.preset-btn .icon { color: var(--accent2); font-size:12px; }
-.preset-btn.empty { color:var(--muted); border-style:dashed; }
-.preset-btn.empty:hover { border-color:var(--accent3); color:var(--accent3); }
-
-/* ── WAYPOINT LIST ── */
-.waypoint-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-height: 160px;
-  overflow-y: auto;
-}
-
-.waypoint-list::-webkit-scrollbar { width:3px; }
-.waypoint-list::-webkit-scrollbar-thumb { background:var(--border); }
-
-.waypoint-item {
-  display: grid;
-  grid-template-columns: 20px 1fr auto;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 6px 8px;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  transition: border-color 0.2s;
-}
-
-.waypoint-item:hover { border-color:var(--accent); }
-.waypoint-item.active { border-color:var(--accent3); background:rgba(57,255,20,0.05); }
-
-.wp-num { color:var(--muted); }
-.wp-coords { color:var(--text); }
-.wp-del {
-  background:none; border:none;
-  color:var(--muted); cursor:pointer;
-  font-size:14px; line-height:1;
-  transition:color 0.2s;
-}
-.wp-del:hover { color:var(--danger); }
-
-/* ── EE READOUT ── */
-.ee-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px;
-}
-
-.ee-cell {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 6px;
-  text-align: center;
-}
-
-.ee-cell .lbl {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 9px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  display: block;
-  margin-bottom: 2px;
-}
-
-.ee-cell .val {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* ── MODAL ── */
-.modal-overlay {
-  display: none;
-  position: fixed; inset:0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-}
-.modal-overlay.show { display:flex; }
-
-.modal {
-  background: var(--panel);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  padding: 24px;
-  min-width: 280px;
-  box-shadow: 0 0 40px rgba(0,212,255,0.2);
-}
-
-.modal h3 {
-  font-family: 'Orbitron', monospace;
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: var(--accent);
-  margin-bottom: 16px;
-}
-
-.modal input[type=text] {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
-  padding: 8px 10px;
-  border-radius: 3px;
-  outline:none;
-  margin-bottom: 14px;
-}
-
-.modal input[type=text]:focus { border-color:var(--accent); }
-.modal .btn-row { margin-top: 4px; }
-
-/* ── AUTO SEND TOGGLE ── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.toggle-label {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 1px;
-}
-
-.toggle {
-  position: relative;
-  width: 38px; height: 20px;
-}
-
-.toggle input { opacity:0; width:0; height:0; }
-
-.toggle-slider {
-  position: absolute; inset:0;
-  background: var(--border);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.toggle-slider::before {
-  content:'';
-  position:absolute;
-  left:3px; top:3px;
-  width:14px; height:14px;
-  background:var(--muted);
-  border-radius:50%;
-  transition:all 0.3s;
-}
-
-.toggle input:checked + .toggle-slider { background:var(--accent); }
-.toggle input:checked + .toggle-slider::before { transform:translateX(18px); background:var(--bg); }
-
-/* ── TRAJ STATUS ── */
-.traj-status {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--muted);
-  text-align: center;
-  padding: 4px;
-}
-
-.bottom-joints {
-  display:grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-}
-
-.joint-col { display:flex; flex-direction:column; gap:4px; }
+.modal { display: none; position: fixed; inset: 0; background: rgba(5,6,16,0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; }
+.modal.show { display: flex; }
+.modal-card { background: var(--bg-1); border: 1px solid var(--border-2); border-radius: 16px; padding: 28px; min-width: 360px; position: relative; overflow: hidden; }
+.modal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--grad); }
+.modal-card h3 { font-family: 'Orbitron', monospace; font-size: 14px; letter-spacing: 4px; margin-bottom: 18px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.modal-card input[type=text] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-1); color: var(--text-1); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 12px 14px; border-radius: 10px; outline: none; margin-bottom: 18px; }
+.modal-card input[type=text]:focus { border-color: var(--purple); }
 </style>
 </head>
 
 <body>
 
-<!-- ═══════════ HEADER ═══════════ -->
+<div class="aurora"></div>
+<div class="aurora-mid"></div>
+<div class="noise"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff006e"/>
+      <stop offset="50%" stop-color="#8338ec"/>
+      <stop offset="100%" stop-color="#3a86ff"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <header>
-  <div class="logo">6DOF <span>ARM</span> CTRL</div>
-  <div class="header-center">
-    <div class="stat-item">FREQ <span class="stat-val" id="hdr-freq">--</span> Hz</div>
-    <div class="stat-item">LATENCY <span class="stat-val" id="hdr-lat">--</span> ms</div>
-    <div class="stat-item">EE DIST <span class="stat-val" id="hdr-dist">--</span> m</div>
+  <div class="brand">
+    <div class="brand-mark"><span>6</span></div>
+    <div class="brand-text">
+      <div class="brand-name">NEURALINK</div>
+      <div class="brand-sub">6-DOF · CONTROL · v2.0</div>
+    </div>
   </div>
-  <div class="conn-group">
+
+  <div class="metrics">
+    <div class="metric"><span class="lbl">FREQ</span><span class="val" id="hdr-freq">—</span><span class="lbl">HZ</span></div>
+    <div class="metric"><span class="lbl">LAT</span><span class="val" id="hdr-lat">—</span><span class="lbl">MS</span></div>
+    <div class="metric"><span class="lbl">DIST</span><span class="val" id="hdr-dist">—</span><span class="lbl">M</span></div>
+  </div>
+
+  <div class="conn">
+    <span class="conn-text" id="conn-label">DISCONNECTED</span>
     <div class="conn-dot" id="conn-dot"></div>
-    <span class="conn-label" id="conn-label">DISCONNECTED</span>
   </div>
 </header>
 
-<!-- ═══════════ LEFT PANEL — CONTROL ═══════════ -->
-<div class="left-panel">
+<div class="panel panel-left">
+  <div class="tab-bar" data-tabs="left">
+    <button class="tab active" data-tab="pose">Pose</button>
+    <button class="tab" data-tab="motion">Motion</button>
+    <button class="tab" data-tab="status">Status</button>
+  </div>
+  <div class="tab-content">
 
-  <!-- Position -->
-  <div>
-    <div class="section-head"><span>Position (m)</span><div class="line"></div></div>
-    <div class="axis-group">
-      <div class="axis-row">
-        <div class="axis-tag x">X</div>
-        <input type="range" id="sx" class="x-axis" min="-1" max="1" step="0.001" value="0.615">
-        <input type="number" id="nx" class="num-input" min="-1" max="1" step="0.001" value="0.615">
+    <div class="tab-pane active" data-pane="pose">
+      <div class="glass">
+        <div class="glass-title">Position · Cartesian (m)</div>
+        <div class="axis-row">
+          <div class="axis-tag x">X</div>
+          <input type="range" id="sx" class="x-axis" min="-1" max="1" step="0.001" value="0.615">
+          <input type="number" id="nx" class="num-input" min="-1" max="1" step="0.001" value="0.615">
+        </div>
+        <div class="axis-row">
+          <div class="axis-tag y">Y</div>
+          <input type="range" id="sy" class="y-axis" min="-1" max="1" step="0.001" value="0.0">
+          <input type="number" id="ny" class="num-input" min="-1" max="1" step="0.001" value="0.0">
+        </div>
+        <div class="axis-row">
+          <div class="axis-tag z">Z</div>
+          <input type="range" id="sz" class="z-axis" min="0" max="1.2" step="0.001" value="0.55">
+          <input type="number" id="nz" class="num-input" min="0" max="1.2" step="0.001" value="0.55">
+        </div>
       </div>
-      <div class="axis-row">
-        <div class="axis-tag y">Y</div>
-        <input type="range" id="sy" class="y-axis" min="-1" max="1" step="0.001" value="0.0">
-        <input type="number" id="ny" class="num-input" min="-1" max="1" step="0.001" value="0.0">
-      </div>
-      <div class="axis-row">
-        <div class="axis-tag z">Z</div>
-        <input type="range" id="sz" class="z-axis" min="0" max="1.2" step="0.001" value="0.55">
-        <input type="number" id="nz" class="num-input" min="0" max="1.2" step="0.001" value="0.55">
+
+      <div class="glass">
+        <div class="glass-title">Orientation · RPY (rad)</div>
+        <div class="axis-row">
+          <div class="axis-tag r">R</div>
+          <input type="range" id="sr" class="r-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
+          <input type="number" id="nr" class="num-input" step="0.001" value="0">
+        </div>
+        <div class="axis-row">
+          <div class="axis-tag p">P</div>
+          <input type="range" id="sp" class="p-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
+          <input type="number" id="np" class="num-input" step="0.001" value="0">
+        </div>
+        <div class="axis-row">
+          <div class="axis-tag yw">Y</div>
+          <input type="range" id="sw" class="yw-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
+          <input type="number" id="nw" class="num-input" step="0.001" value="0">
+        </div>
       </div>
     </div>
+
+    <div class="tab-pane" data-pane="motion">
+      <div class="glass">
+        <div class="glass-title">Motion Control</div>
+        <div class="row">
+          <span class="row-label">Speed</span>
+          <span class="slider-val" id="speed-val">1.0×</span>
+        </div>
+        <input type="range" id="speed-slider" min="0.1" max="2.0" step="0.1" value="1.0" style="margin-top:6px">
+        <div class="row" style="margin-top:6px">
+          <span class="row-label">Auto Send</span>
+          <label class="toggle"><input type="checkbox" id="auto-send"><span class="toggle-track"></span></label>
+        </div>
+        <div class="row">
+          <span class="row-label">Workspace</span>
+          <label class="toggle"><input type="checkbox" id="ws-toggle" onchange="setWorkspaceVisible(this.checked); updateWorkspaceColor();"><span class="toggle-track"></span></label>
+        </div>
+      </div>
+      <div class="glass">
+        <div class="glass-title">Trajectory · Loop & Dwell</div>
+        <div class="row">
+          <span class="row-label">Loop Trajectory</span>
+          <label class="toggle"><input type="checkbox" id="loop-traj"><span class="toggle-track"></span></label>
+        </div>
+        <div class="row">
+          <span class="row-label">Dwell</span>
+          <span class="slider-val" id="dwell-val" style="color:var(--warn)">0.5s</span>
+        </div>
+        <input type="range" id="dwell-slider" min="0" max="3" step="0.1" value="0.5" style="margin-top:6px">
+      </div>
+    </div>
+
+    <div class="tab-pane" data-pane="status">
+      <div class="glass">
+        <div class="glass-title">Current EE · World Frame</div>
+        <div class="ee-grid">
+          <div class="ee-tile x"><span class="lbl">X</span><span class="val" id="ee-x" style="color:#ff5577">—</span></div>
+          <div class="ee-tile y"><span class="lbl">Y</span><span class="val" id="ee-y" style="color:var(--green)">—</span></div>
+          <div class="ee-tile z"><span class="lbl">Z</span><span class="val" id="ee-z" style="color:var(--blue)">—</span></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Orientation -->
-  <div>
-    <div class="section-head"><span>Orientation (rad)</span><div class="line"></div></div>
-    <div class="axis-group">
-      <div class="axis-row">
-        <div class="axis-tag r">R</div>
-        <input type="range" id="sr" class="r-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
-        <input type="number" id="nr" class="num-input" step="0.001" value="0">
-      </div>
-      <div class="axis-row">
-        <div class="axis-tag p">P</div>
-        <input type="range" id="sp" class="p-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
-        <input type="number" id="np" class="num-input" step="0.001" value="0">
-      </div>
-      <div class="axis-row">
-        <div class="axis-tag yw">Y</div>
-        <input type="range" id="sw" class="yw-axis" min="-3.1416" max="3.1416" step="0.001" value="0">
-        <input type="number" id="nw" class="num-input" step="0.001" value="0">
-      </div>
+  <div class="cmd-bar">
+    <div class="cmd-grid">
+      <button class="btn btn-primary" onclick="sendPose()">▶ Send</button>
+      <button class="btn btn-warm" onclick="goHome()">⌂ Home</button>
+    </div>
+    <div class="cmd-grid">
+      <button class="btn btn-ghost" onclick="goZero()">◉ Zero</button>
+      <button class="btn btn-danger" onclick="eStop()">✕ E-Stop</button>
     </div>
   </div>
-
-  <!-- Speed -->
-  <div>
-    <div class="section-head"><span>Motion</span><div class="line"></div></div>
-    <div class="speed-row">
-      <span class="speed-label">SPEED</span>
-      <input type="range" id="speed-slider" min="0.1" max="2.0" step="0.1" value="1.0" style="flex:1">
-      <span id="speed-val" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);white-space:nowrap">1.0×</span>
-    </div>
-    <div class="toggle-row" style="margin-top:10px">
-      <span class="toggle-label">AUTO SEND</span>
-      <label class="toggle">
-        <input type="checkbox" id="auto-send">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-  </div>
-
-  <!-- Reachability -->
-  <div>
-    <div class="section-head"><span>Status</span><div class="line"></div></div>
-    <div class="ee-grid">
-      <div class="ee-cell">
-        <span class="lbl">CURR X</span>
-        <span class="val" id="ee-x" style="color:#ff4466">--</span>
-      </div>
-      <div class="ee-cell">
-        <span class="lbl">CURR Y</span>
-        <span class="val" id="ee-y" style="color:#44ff88">--</span>
-      </div>
-      <div class="ee-cell">
-        <span class="lbl">CURR Z</span>
-        <span class="val" id="ee-z" style="color:#4488ff">--</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Buttons -->
-  <div>
-    <div class="section-head"><span>Commands</span><div class="line"></div></div>
-    <div class="btn-row" style="margin-bottom:8px">
-      <button class="btn btn-primary" onclick="sendPose()">▶ SEND</button>
-      <button class="btn btn-home" onclick="goHome()">⌂ HOME</button>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goZero()">◉ ZERO</button>
-      <button class="btn btn-danger" onclick="eStop()">✕ E-STOP</button>
-    </div>
-  </div>
-
 </div>
 
-<!-- ═══════════ CENTER PANEL — 3D VIEW ═══════════ -->
-<div class="center-panel">
+<div class="viewport">
   <canvas id="three-canvas"></canvas>
-
-  <div class="viewport-overlay">
-    <div class="badge reach-badge" id="reach-badge">REACH OK</div>
-    <div class="badge ik-badge" id="ik-badge">IK IDLE</div>
+  <div class="hud">
+    <div class="hud-tl">
+      <div class="pill" id="reach-badge">Reach OK</div>
+      <div class="pill info" id="ik-badge">IK Idle</div>
+    </div>
+    <div class="hud-bl">
+      <div class="hint">DRAG · ROTATE &nbsp;·&nbsp; SCROLL · ZOOM &nbsp;·&nbsp; RIGHT-DRAG · PAN</div>
+    </div>
   </div>
-
-  <div class="viewport-hint">DRAG ∙ ROTATE &nbsp;|&nbsp; SCROLL ∙ ZOOM &nbsp;|&nbsp; RIGHT-DRAG ∙ PAN</div>
 </div>
 
-<!-- ═══════════ RIGHT PANEL — TRAJECTORY & PRESETS ═══════════ -->
-<div class="right-panel">
-
-  <!-- Presets -->
-  <div>
-    <div class="section-head"><span>Presets</span><div class="line"></div></div>
-    <div class="preset-grid" id="preset-grid">
-      <button class="preset-btn" onclick="loadPreset('home')"><span class="icon">⌂</span>HOME</button>
-      <button class="preset-btn" onclick="loadPreset('zero')"><span class="icon">◉</span>ZERO</button>
-      <button class="preset-btn empty" id="ps2" onclick="saveCurrentAsPreset(2)"><span class="icon">+</span>SAVE SLOT 3</button>
-      <button class="preset-btn empty" id="ps3" onclick="saveCurrentAsPreset(3)"><span class="icon">+</span>SAVE SLOT 4</button>
-      <button class="preset-btn empty" id="ps4" onclick="saveCurrentAsPreset(4)"><span class="icon">+</span>SAVE SLOT 5</button>
-      <button class="preset-btn empty" id="ps5" onclick="saveCurrentAsPreset(5)"><span class="icon">+</span>SAVE SLOT 6</button>
-    </div>
+<div class="panel panel-right">
+  <div class="tab-bar" data-tabs="right">
+    <button class="tab active" data-tab="presets">Presets</button>
+    <button class="tab" data-tab="traj">Trajectory</button>
+    <button class="tab" data-tab="rec">Rec</button>
+    <button class="tab" data-tab="live">Live</button>
   </div>
+  <div class="tab-content">
 
-  <!-- Trajectory Builder -->
-  <div>
-    <div class="section-head"><span>Trajectory Builder</span><div class="line"></div></div>
-    <div class="waypoint-list" id="waypoint-list"></div>
-    <div style="margin-top:8px; display:flex; gap:6px;">
-      <button class="btn btn-ghost" style="font-size:8px;letter-spacing:1px" onclick="addWaypoint()">+ ADD WAYPOINT</button>
-      <button class="btn btn-ghost" style="font-size:8px;letter-spacing:1px" onclick="clearWaypoints()">✕ CLEAR</button>
+    <div class="tab-pane active" data-pane="presets">
+      <div class="glass">
+        <div class="glass-title">Preset Slots</div>
+        <div class="preset-grid">
+          <button class="preset" onclick="loadPreset('home')"><span class="icon">⌂</span>Home</button>
+          <button class="preset" onclick="loadPreset('zero')"><span class="icon">◉</span>Zero</button>
+          <button class="preset empty" id="ps2" onclick="saveCurrentAsPreset(2)"><span class="icon">+</span>Slot 3</button>
+          <button class="preset empty" id="ps3" onclick="saveCurrentAsPreset(3)"><span class="icon">+</span>Slot 4</button>
+          <button class="preset empty" id="ps4" onclick="saveCurrentAsPreset(4)"><span class="icon">+</span>Slot 5</button>
+          <button class="preset empty" id="ps5" onclick="saveCurrentAsPreset(5)"><span class="icon">+</span>Slot 6</button>
+        </div>
+      </div>
     </div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn btn-exec" onclick="executeTrajectory()">▶▶ EXECUTE TRAJ</button>
+
+    <div class="tab-pane" data-pane="traj">
+      <div class="glass">
+        <div class="glass-title">Waypoints</div>
+        <div class="wp-list" id="waypoint-list"></div>
+        <div class="cmd-grid" style="margin-top:10px">
+          <button class="btn btn-ghost" onclick="addWaypoint()">+ Add</button>
+          <button class="btn btn-ghost" onclick="clearWaypoints()">✕ Clear</button>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn btn-success" style="width:100%" onclick="executeTrajectory()">▶▶ Execute</button>
+        </div>
+        <div class="traj-status" id="traj-status">No waypoints loaded</div>
+      </div>
     </div>
-    <div class="traj-status" id="traj-status">No waypoints loaded</div>
+
+    <div class="tab-pane" data-pane="rec">
+      <div class="glass">
+        <div class="glass-title">Motion Recorder</div>
+
+        <div class="rec-status">
+          <div class="rec-led" id="rec-led"></div>
+          <div class="rec-info">
+            <div class="rec-frames" id="rec-frames">0 frames</div>
+            <div class="rec-time" id="rec-time">0.0 s</div>
+          </div>
+        </div>
+
+        <div class="cmd-grid" style="margin-top:12px">
+          <button class="btn btn-danger" id="rec-btn" onclick="toggleRecording()">● Record</button>
+          <button class="btn btn-success" id="play-btn" onclick="togglePlayback()">▶ Play</button>
+        </div>
+
+        <div class="row" style="margin-top:14px">
+          <span class="row-label">Playback Speed</span>
+          <span class="slider-val" id="playback-speed-val">1.0×</span>
+        </div>
+        <input type="range" id="playback-speed" min="0.25" max="3" step="0.25" value="1" style="margin-top:4px">
+
+        <div class="row" style="margin-top:6px">
+          <span class="row-label">Loop Playback</span>
+          <label class="toggle"><input type="checkbox" id="rec-loop"><span class="toggle-track"></span></label>
+        </div>
+
+        <div class="cmd-grid" style="margin-top:14px">
+          <button class="btn btn-ghost" onclick="clearRecording()">✕ Clear</button>
+          <button class="btn btn-ghost" onclick="resetPlaybackPosition()">↺ Reset</button>
+        </div>
+
+        <div class="cmd-grid" style="margin-top:8px">
+          <button class="btn btn-ghost" onclick="saveRecording()">💾 Save</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('rec-load').click()">📁 Load</button>
+        </div>
+
+        <input type="file" id="rec-load" accept=".json" style="display:none" onchange="loadRecording(event)">
+      </div>
+    </div>
+
+    <div class="tab-pane" data-pane="live">
+      <div class="glass">
+        <div class="glass-title">Live EE Pose</div>
+        <div class="ee-grid">
+          <div class="ee-tile x"><span class="lbl">X</span><span class="val" id="live-x" style="color:#ff5577">0.00</span></div>
+          <div class="ee-tile y"><span class="lbl">Y</span><span class="val" id="live-y" style="color:var(--green)">0.00</span></div>
+          <div class="ee-tile z"><span class="lbl">Z</span><span class="val" id="live-z" style="color:var(--blue)">0.00</span></div>
+          <div class="ee-tile r"><span class="lbl">Roll</span><span class="val" id="live-r" style="color:var(--warn)">0.00</span></div>
+          <div class="ee-tile p"><span class="lbl">Pitch</span><span class="val" id="live-p" style="color:var(--purple)">0.00</span></div>
+          <div class="ee-tile yw"><span class="lbl">Yaw</span><span class="val" id="live-yw" style="color:var(--cyan)">0.00</span></div>
+        </div>
+      </div>
+    </div>
+
   </div>
-
-  <!-- Loop & Options -->
-  <div>
-    <div class="section-head"><span>Trajectory Options</span><div class="line"></div></div>
-    <div class="toggle-row" style="margin-bottom:8px">
-      <span class="toggle-label">LOOP TRAJECTORY</span>
-      <label class="toggle">
-        <input type="checkbox" id="loop-traj">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div class="speed-row">
-      <span class="speed-label">DWELL</span>
-      <input type="range" id="dwell-slider" min="0" max="3" step="0.1" value="0.5" style="flex:1">
-      <span id="dwell-val" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent2);white-space:nowrap">0.5s</span>
-    </div>
-  </div>
-
-  <!-- Live EE -->
-  <div>
-    <div class="section-head"><span>Live EE Pose</span><div class="line"></div></div>
-    <div class="ee-grid">
-      <div class="ee-cell"><span class="lbl">X</span><span class="val" id="live-x" style="color:#ff4466">0.00</span></div>
-      <div class="ee-cell"><span class="lbl">Y</span><span class="val" id="live-y" style="color:#44ff88">0.00</span></div>
-      <div class="ee-cell"><span class="lbl">Z</span><span class="val" id="live-z" style="color:#4488ff">0.00</span></div>
-      <div class="ee-cell"><span class="lbl">ROLL</span><span class="val" id="live-r" style="color:#ff8844">0.00</span></div>
-      <div class="ee-cell"><span class="lbl">PITCH</span><span class="val" id="live-p" style="color:#cc44ff">0.00</span></div>
-      <div class="ee-cell"><span class="lbl">YAW</span><span class="val" id="live-yw" style="color:#44ccff">0.00</span></div>
-    </div>
-  </div>
-
 </div>
 
-<!-- ═══════════ BOTTOM — JOINT READOUT ═══════════ -->
-<div class="bottom-bar">
-  <div class="bottom-joints" id="joint-readout"></div>
+<div class="bottom">
+  <div class="bottom-title">Joint Telemetry</div>
+  <div class="joint-grid" id="joint-readout"></div>
 </div>
 
-<!-- ═══════════ PRESET SAVE MODAL ═══════════ -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
+<div class="modal" id="modal">
+  <div class="modal-card">
     <h3>SAVE PRESET</h3>
-    <input type="text" id="preset-name-input" placeholder="Enter preset name...">
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="confirmSavePreset()">SAVE</button>
-      <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
+    <input type="text" id="preset-name-input" placeholder="Preset name…">
+    <div class="cmd-grid">
+      <button class="btn btn-primary" onclick="confirmSavePreset()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════════
+document.querySelectorAll('.tab-bar').forEach(bar => {
+  bar.addEventListener('click', e => {
+    if (!e.target.classList.contains('tab')) return;
+    const target = e.target.dataset.tab;
+    bar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    bar.parentElement.querySelectorAll('.tab-pane').forEach(p => {
+      p.classList.toggle('active', p.dataset.pane === target);
+    });
+  });
+});
+
 const DH = [
   [0,      0.160, 0.150,  1.5708],
   [1.5708, 0.0,   0.350,  0],
@@ -833,39 +596,25 @@ const DH = [
   [0,      0.0,   0,      1.5708],
   [0,      0.104, 0.0,    0],
 ];
-
 const JOINT_LIMITS = [
-  [-2.618, 2.618],  // ±150°
-  [-1.396, 1.396],  // ±80°
-  [-1.396, 1.396],
-  [-3.1416,3.1416], // ±180°
-  [-1.396, 1.396],
-  [-3.1416,3.1416],
+  [-2.618, 2.618], [-1.396, 1.396], [-1.396, 1.396],
+  [-3.1416,3.1416], [-1.396, 1.396], [-3.1416,3.1416],
 ];
-
-const JOINT_NAMES = ['J1','J2','J3','J4','J5','J6'];
 
 let currentJoints = [0,0,0,0,0,0];
 let targetPose = {x:0.615,y:0.0,z:0.55,roll:0,pitch:0,yaw:0};
 let waypoints = [];
 let presets = {
   home: {x:0.615,y:0.0,z:0.55,roll:0,pitch:0,yaw:0,name:'HOME'},
-  zero: {x:0.5,  y:0.0,z:0.4, roll:0,pitch:0,yaw:0,name:'ZERO'},
+  zero: {x:0.5, y:0.0,z:0.4, roll:0,pitch:0,yaw:0,name:'ZERO'},
 };
 let customPresets = [null,null,null,null];
 let pendingPresetSlot = null;
-let ros = null;
-let connected = false;
-let lastMsgTime = 0;
-let msgCount = 0;
-let freqInterval = null;
-let trajRunning = false;
-let trajCancelled = false;
-let lastSendTime = 0;   // for speed throttle
+let ros = null, connected = false;
+let msgCount = 0, freqInterval = null;
+let trajRunning = false, trajCancelled = false;
+let lastSendTime = 0;
 
-// ════════════════════════════════════════════════
-//  THREE.JS SETUP
-// ════════════════════════════════════════════════
 const canvas = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -876,91 +625,61 @@ const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 100);
 camera.position.set(1.5, 0.6, 0.0);
 camera.lookAt(0.3, 0.3, 0.0);
 
-// Grid
-const grid = new THREE.GridHelper(2, 20, 0x1a2535, 0x1a2535);
+const grid = new THREE.GridHelper(2, 20, 0x222848, 0x161a2c);
 scene.add(grid);
 
-// Axis indicator (small, at origin)
 const mkAxis = (color, dir) => {
   const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), dir]);
   return new THREE.Line(g, new THREE.LineBasicMaterial({color}));
 };
 const axGrp = new THREE.Group();
-axGrp.add(mkAxis(0xff4466, new THREE.Vector3(0.1,0,0)));
-axGrp.add(mkAxis(0x44ff88, new THREE.Vector3(0,0.1,0)));
-axGrp.add(mkAxis(0x4488ff, new THREE.Vector3(0,0,0.1)));
+axGrp.add(mkAxis(0xff5577, new THREE.Vector3(0.1,0,0)));
+axGrp.add(mkAxis(0x06ffa5, new THREE.Vector3(0,0.1,0)));
+axGrp.add(mkAxis(0x3a86ff, new THREE.Vector3(0,0,0.1)));
 scene.add(axGrp);
 
-// Ambient + directional light for the sphere joints
-scene.add(new THREE.AmbientLight(0x334455, 2));
-const dLight = new THREE.DirectionalLight(0x00d4ff, 1);
+scene.add(new THREE.AmbientLight(0x554466, 1.5));
+const dLight = new THREE.DirectionalLight(0x8338ec, 0.8);
 dLight.position.set(2,3,2);
 scene.add(dLight);
+const dLight2 = new THREE.DirectionalLight(0x00f5d4, 0.4);
+dLight2.position.set(-2,-1,2);
+scene.add(dLight2);
 
-// Arm segments (lines) + joint spheres
-const segMat = new THREE.LineBasicMaterial({color:0x00d4ff, linewidth:2});
-const ghostMat = new THREE.LineBasicMaterial({color:0xff6b35, linewidth:1, transparent:true, opacity:0.4});
-const jMat = new THREE.MeshStandardMaterial({color:0x00d4ff, emissive:0x004466, roughness:0.3});
-const eeMat = new THREE.MeshStandardMaterial({color:0x39ff14, emissive:0x003300, roughness:0.2});
+const segMat = new THREE.LineBasicMaterial({color:0x8338ec, linewidth:2});
+const ghostMat = new THREE.LineBasicMaterial({color:0xff006e, linewidth:1, transparent:true, opacity:0.45});
+const jMat = new THREE.MeshStandardMaterial({color:0x8338ec, emissive:0x2a1855, roughness:0.35});
+const eeMat = new THREE.MeshStandardMaterial({color:0x06ffa5, emissive:0x004422, roughness:0.2});
 
 let armLines = [], armJoints = [], ghostLines = [];
-let eeMarker = null;
 let targetMarker = null;
 
 function buildArmVisuals() {
-  // Remove old
-  armLines.forEach(l => scene.remove(l));
-  armJoints.forEach(j => scene.remove(j));
-  ghostLines.forEach(l => scene.remove(l));
-  armLines=[]; armJoints=[]; ghostLines=[];
-  if(eeMarker) scene.remove(eeMarker);
-  if(targetMarker) scene.remove(targetMarker);
-
-  // 7 joints (base + 6)
   for(let i=0;i<7;i++){
-    const r = i===6 ? 0.018 : 0.022;
+    const r = i===6 ? 0.020 : 0.024;
     const mat = i===6 ? eeMat : jMat;
-    const s = new THREE.Mesh(new THREE.SphereGeometry(r,12,12), mat.clone());
-    scene.add(s);
-    armJoints.push(s);
+    const s = new THREE.Mesh(new THREE.SphereGeometry(r,16,16), mat.clone());
+    scene.add(s); armJoints.push(s);
   }
-
-  // 6 links
   for(let i=0;i<6;i++){
-    const pts = [new THREE.Vector3(), new THREE.Vector3()];
-    const g = new THREE.BufferGeometry().setFromPoints(pts);
-    const l = new THREE.Line(g, segMat.clone());
-    scene.add(l);
-    armLines.push(l);
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    const l = new THREE.Line(g, segMat.clone()); scene.add(l); armLines.push(l);
   }
-
-  // Ghost lines
   for(let i=0;i<6;i++){
-    const pts = [new THREE.Vector3(), new THREE.Vector3()];
-    const g = new THREE.BufferGeometry().setFromPoints(pts);
-    const l = new THREE.Line(g, ghostMat.clone());
-    scene.add(l);
-    ghostLines.push(l);
+    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    const l = new THREE.Line(g, ghostMat.clone()); scene.add(l); ghostLines.push(l);
   }
-
-  // Target sphere
   targetMarker = new THREE.Mesh(
-    new THREE.SphereGeometry(0.025,12,12),
-    new THREE.MeshStandardMaterial({color:0xff6b35, transparent:true, opacity:0.6, emissive:0x441100})
+    new THREE.SphereGeometry(0.025,16,16),
+    new THREE.MeshStandardMaterial({color:0xff006e, transparent:true, opacity:0.7, emissive:0x550022})
   );
   scene.add(targetMarker);
 }
-
 buildArmVisuals();
 
-// DH forward kinematics — returns array of positions in Three.js frame
-// ROS frame: X=forward, Y=left, Z=up
-// Three.js frame: X=right, Y=up, Z=toward viewer
-// Conversion: THREE.x = ROS.x, THREE.y = ROS.z, THREE.z = -ROS.y
 function dhFK(joints) {
   const positions = [new THREE.Vector3(0,0,0)];
   let T = new THREE.Matrix4();
-
   for(let i=0;i<6;i++){
     const [theta0, d, a, alpha] = DH[i];
     const theta = joints[i] + theta0;
@@ -973,11 +692,7 @@ function dhFK(joints) {
        0,      0,      0,    1
     );
     T.multiply(Ti);
-    // Extract ROS-frame position, remap to Three.js Y-up
-    const rx = T.elements[12];
-    const ry = T.elements[13];
-    const rz = T.elements[14];
-    positions.push(new THREE.Vector3(rx, rz, -ry));
+    positions.push(new THREE.Vector3(T.elements[12], T.elements[14], -T.elements[13]));
   }
   return positions;
 }
@@ -997,43 +712,31 @@ function getEEOrientation(joints) {
     );
     T.multiply(Ti);
   }
-  // Three.js Matrix4.elements is column-major: T.elements[col*4 + row]
   const r11 = T.elements[0],  r12 = T.elements[4];
   const r21 = T.elements[1],  r22 = T.elements[5];
   const r31 = T.elements[2],  r32 = T.elements[6],  r33 = T.elements[10];
-
-  // ZYX intrinsic Euler (ROS RPY convention)
   let roll, pitch, yaw;
   if (Math.abs(r31) < 0.9999) {
     pitch = Math.asin(-r31);
     roll  = Math.atan2(r32, r33);
     yaw   = Math.atan2(r21, r11);
   } else {
-    pitch = -Math.PI / 2 * Math.sign(r31);
-    roll  = 0;
-    yaw   = Math.atan2(-r12, r22);
+    pitch = -Math.PI/2 * Math.sign(r31);
+    roll = 0; yaw = Math.atan2(-r12, r22);
   }
   return { roll, pitch, yaw };
 }
 
 function updateArmVisuals(joints, targetPositions) {
   const positions = dhFK(joints);
-
-  // Actual arm
-  for(let i=0;i<7;i++){
-    armJoints[i].position.copy(positions[i]);
-  }
+  for(let i=0;i<7;i++) armJoints[i].position.copy(positions[i]);
   for(let i=0;i<6;i++){
-    const pts = [positions[i], positions[i+1]];
-    armLines[i].geometry.setFromPoints(pts);
+    armLines[i].geometry.setFromPoints([positions[i], positions[i+1]]);
     armLines[i].geometry.attributes.position.needsUpdate = true;
   }
-
-  // Ghost (target)
   if(targetPositions){
     for(let i=0;i<6;i++){
-      const pts = [targetPositions[i], targetPositions[i+1]];
-      ghostLines[i].geometry.setFromPoints(pts);
+      ghostLines[i].geometry.setFromPoints([targetPositions[i], targetPositions[i+1]]);
       ghostLines[i].geometry.attributes.position.needsUpdate = true;
     }
     targetMarker.position.copy(targetPositions[6]);
@@ -1044,62 +747,64 @@ function updateArmVisuals(joints, targetPositions) {
     ghostLines.forEach(l=>l.visible=false);
   }
 
-  // Update live EE display
-  // ee is in Three.js frame (Y-up): ee.x=ROS_X, ee.y=ROS_Z(up), ee.z=-ROS_Y
-  // Convert back to ROS frame for display to match RViz
   const ee = positions[6];
-  const ros_x =  ee.x;
-  const ros_y = -ee.z;
-  const ros_z =  ee.y;
-  // document.getElementById('live-x').textContent = ros_x.toFixed(3);
-  // document.getElementById('live-y').textContent = ros_y.toFixed(3);
-  // document.getElementById('live-z').textContent = ros_z.toFixed(3);
-  // document.getElementById('ee-x').textContent = ros_x.toFixed(3);
-  // document.getElementById('ee-y').textContent = ros_y.toFixed(3);
-  // document.getElementById('ee-z').textContent = ros_z.toFixed(3);
+  const ros_x = ee.x, ros_y = -ee.z, ros_z = ee.y;
+  document.getElementById('live-x').textContent = ros_x.toFixed(3);
+  document.getElementById('live-y').textContent = ros_y.toFixed(3);
+  document.getElementById('live-z').textContent = ros_z.toFixed(3);
+  document.getElementById('ee-x').textContent = ros_x.toFixed(3);
+  document.getElementById('ee-y').textContent = ros_y.toFixed(3);
+  document.getElementById('ee-z').textContent = ros_z.toFixed(3);
 
-    // Live EE orientation (real RPY, not joint angles)
   const rpy = getEEOrientation(joints);
   document.getElementById('live-r').textContent  = (rpy.roll  * 180/Math.PI).toFixed(2);
   document.getElementById('live-p').textContent  = (rpy.pitch * 180/Math.PI).toFixed(2);
   document.getElementById('live-yw').textContent = (rpy.yaw   * 180/Math.PI).toFixed(2);
 
-  // Distance to target (both in Three.js frame)
   const tgt = new THREE.Vector3(targetPose.x, targetPose.z, -targetPose.y);
-  const dist = ee.distanceTo(tgt);
-  document.getElementById('hdr-dist').textContent = dist.toFixed(3);
+  document.getElementById('hdr-dist').textContent = ee.distanceTo(tgt).toFixed(3);
 }
 
-// Orbit controls (minimal, no import needed)
-let isDragging = false, isRightDrag = false;
-let lastMouse = {x:0,y:0};
-let spherical = {theta: Math.PI/2, phi: Math.PI/2.8, r: 2.0};
-let panOffset = new THREE.Vector3();
+const REACH_OUTER = 0.95, REACH_INNER = 0.15, BASE_HEIGHT = 0.16;
+const outerDomeMat = new THREE.MeshBasicMaterial({color:0x8338ec, transparent:true, opacity:0.06, side:THREE.DoubleSide, depthWrite:false});
+const outerDome = new THREE.Mesh(new THREE.SphereGeometry(REACH_OUTER, 48, 24, 0, Math.PI*2, 0, Math.PI/2), outerDomeMat);
+outerDome.position.set(0, BASE_HEIGHT, 0); outerDome.visible = false; scene.add(outerDome);
+const outerWire = new THREE.LineSegments(
+  new THREE.WireframeGeometry(new THREE.SphereGeometry(REACH_OUTER, 24, 12, 0, Math.PI*2, 0, Math.PI/2)),
+  new THREE.LineBasicMaterial({color:0x8338ec, transparent:true, opacity:0.3})
+);
+outerWire.position.set(0, BASE_HEIGHT, 0); outerWire.visible = false; scene.add(outerWire);
+const innerDome = new THREE.Mesh(new THREE.SphereGeometry(REACH_INNER, 24, 16),
+  new THREE.MeshBasicMaterial({color:0xff2e63, transparent:true, opacity:0.15, depthWrite:false}));
+innerDome.position.set(0, BASE_HEIGHT, 0); innerDome.visible = false; scene.add(innerDome);
+const baseDisc = new THREE.Mesh(new THREE.RingGeometry(REACH_INNER, REACH_OUTER, 64),
+  new THREE.MeshBasicMaterial({color:0x8338ec, transparent:true, opacity:0.08, side:THREE.DoubleSide}));
+baseDisc.rotation.x = -Math.PI/2; baseDisc.position.set(0, 0.001, 0); baseDisc.visible = false; scene.add(baseDisc);
 
-canvas.addEventListener('mousedown', e => {
-  isDragging = true;
-  isRightDrag = e.button === 2;
-  lastMouse = {x:e.clientX, y:e.clientY};
-});
+const workspaceMeshes = [outerDome, outerWire, innerDome, baseDisc];
+function setWorkspaceVisible(v) { workspaceMeshes.forEach(m => m.visible = v); }
+function updateWorkspaceColor() {
+  const r = Math.sqrt(targetPose.x**2 + targetPose.y**2 + (targetPose.z - BASE_HEIGHT)**2);
+  const inReach = r >= REACH_INNER && r <= REACH_OUTER;
+  outerDomeMat.color.setHex(inReach ? 0x8338ec : 0xff2e63);
+  outerDomeMat.opacity = inReach ? 0.06 : 0.14;
+}
+
+let isDragging=false, isRightDrag=false;
+let lastMouse={x:0,y:0};
+let spherical={theta:Math.PI/2, phi:Math.PI/2.8, r:2.0};
+let panOffset = new THREE.Vector3();
+canvas.addEventListener('mousedown', e => { isDragging=true; isRightDrag=e.button===2; lastMouse={x:e.clientX,y:e.clientY}; });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('mouseup', ()=> isDragging=false);
 window.addEventListener('mousemove', e => {
   if(!isDragging) return;
-  const dx = e.clientX - lastMouse.x;
-  const dy = e.clientY - lastMouse.y;
-  lastMouse = {x:e.clientX, y:e.clientY};
-
-  if(isRightDrag){
-    panOffset.x -= dx * 0.002;
-    panOffset.y += dy * 0.002;
-  } else {
-    spherical.theta -= dx * 0.008;
-    spherical.phi = Math.max(0.1, Math.min(Math.PI-0.1, spherical.phi - dy*0.008));
-  }
+  const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
+  lastMouse = {x:e.clientX,y:e.clientY};
+  if(isRightDrag){ panOffset.x -= dx*0.002; panOffset.y += dy*0.002; }
+  else { spherical.theta -= dx*0.008; spherical.phi = Math.max(0.1, Math.min(Math.PI-0.1, spherical.phi - dy*0.008)); }
 });
-canvas.addEventListener('wheel', e => {
-  spherical.r = Math.max(0.5, Math.min(5, spherical.r + e.deltaY * 0.002));
-});
+canvas.addEventListener('wheel', e => { spherical.r = Math.max(0.5, Math.min(5, spherical.r + e.deltaY*0.002)); });
 
 function updateCamera() {
   const cx = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
@@ -1109,140 +814,81 @@ function updateCamera() {
   camera.lookAt(panOffset.x, 0.3 + panOffset.y, 0);
 }
 
-// Resize
 function resize(){
   const c = canvas.parentElement;
-  const w = c.clientWidth, h = c.clientHeight;
-  renderer.setSize(w,h);
-  camera.aspect = w/h;
+  renderer.setSize(c.clientWidth, c.clientHeight);
+  camera.aspect = c.clientWidth/c.clientHeight;
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resize);
 resize();
 
-// Animate
-let frameCount = 0;
 function animate(){
   requestAnimationFrame(animate);
-  frameCount++;
   updateCamera();
-
-  // Subtle glow pulsing on EE joint
   const t = Date.now()*0.001;
-  if(armJoints.length > 6){
-    armJoints[6].material.emissiveIntensity = 0.5 + 0.3*Math.sin(t*3);
-  }
-
+  if(armJoints.length > 6) armJoints[6].material.emissiveIntensity = 0.5 + 0.3*Math.sin(t*3);
   renderer.render(scene, camera);
 }
 animate();
 
-// ════════════════════════════════════════════════
-//  SLIDER ↔ NUMBER INPUT SYNC
-// ════════════════════════════════════════════════
-const pairs = [
-  ['sx','nx'], ['sy','ny'], ['sz','nz'],
-  ['sr','nr'], ['sp','np'], ['sw','nw']
-];
-
+const pairs = [['sx','nx'],['sy','ny'],['sz','nz'],['sr','nr'],['sp','np'],['sw','nw']];
 pairs.forEach(([sid,nid]) => {
-  const s = document.getElementById(sid);
-  const n = document.getElementById(nid);
-
-  s.addEventListener('input', () => {
-    n.value = parseFloat(s.value).toFixed(3);
-    onControlChange();
-  });
-  n.addEventListener('input', () => {
-    s.value = n.value;
-    onControlChange();
-  });
+  const s = document.getElementById(sid), n = document.getElementById(nid);
+  s.addEventListener('input', () => { n.value = parseFloat(s.value).toFixed(3); onControlChange(); });
+  n.addEventListener('input', () => { s.value = n.value; onControlChange(); });
 });
-
 document.getElementById('speed-slider').addEventListener('input', function(){
   document.getElementById('speed-val').textContent = parseFloat(this.value).toFixed(1)+'×';
 });
-
 document.getElementById('dwell-slider').addEventListener('input', function(){
   document.getElementById('dwell-val').textContent = parseFloat(this.value).toFixed(1)+'s';
 });
 
 function getControlValues() {
   return {
-    x:    parseFloat(document.getElementById('sx').value),
-    y:    parseFloat(document.getElementById('sy').value),
-    z:    parseFloat(document.getElementById('sz').value),
+    x: parseFloat(document.getElementById('sx').value),
+    y: parseFloat(document.getElementById('sy').value),
+    z: parseFloat(document.getElementById('sz').value),
     roll: parseFloat(document.getElementById('sr').value),
-    pitch:parseFloat(document.getElementById('sp').value),
-    yaw:  parseFloat(document.getElementById('sw').value),
+    pitch: parseFloat(document.getElementById('sp').value),
+    yaw: parseFloat(document.getElementById('sw').value),
   };
 }
-
 function setControlValues(pose) {
   const map = {sx:'x',sy:'y',sz:'z',sr:'roll',sp:'pitch',sw:'yaw'};
   const nmap = {nx:'x',ny:'y',nz:'z',nr:'roll',np:'pitch',nw:'yaw'};
-  Object.entries(map).forEach(([id,key]) => {
-    document.getElementById(id).value = pose[key];
-  });
-  Object.entries(nmap).forEach(([id,key]) => {
-    document.getElementById(id).value = parseFloat(pose[key]).toFixed(3);
-  });
+  Object.entries(map).forEach(([id,key]) => { document.getElementById(id).value = pose[key]; });
+  Object.entries(nmap).forEach(([id,key]) => { document.getElementById(id).value = parseFloat(pose[key]).toFixed(3); });
   onControlChange();
 }
-
 function onControlChange() {
   targetPose = getControlValues();
-  // Update reach indicator
   const r = Math.sqrt(targetPose.x**2 + targetPose.y**2 + targetPose.z**2);
   const badge = document.getElementById('reach-badge');
-  if(r < 0.15){
-    badge.textContent='SINGULARITY';
-    badge.className='badge reach-badge error';
-  } else if(r > 0.95){
-    badge.textContent='NEAR LIMIT';
-    badge.className='badge reach-badge warn';
-  } else {
-    badge.textContent='REACH OK';
-    badge.className='badge reach-badge';
-  }
-
-  // Update ghost arm with target
-  const ghostJoints = currentJoints.slice();
-  const targetPositions = dhFK(ghostJoints);
+  if(r < 0.15){ badge.textContent='Singularity'; badge.className='pill error'; }
+  else if(r > 0.95){ badge.textContent='Near Limit'; badge.className='pill warn'; }
+  else { badge.textContent='Reach OK'; badge.className='pill'; }
+  const targetPositions = dhFK(currentJoints.slice());
   updateArmVisuals(currentJoints, targetPositions);
-
-  if(document.getElementById('auto-send').checked){
-    sendPose();
-  }
+  if(document.getElementById('auto-send').checked) sendPose();
+  updateWorkspaceColor();
 }
 
-// ════════════════════════════════════════════════
-//  ROSBRIDGE CONNECTION
-// ════════════════════════════════════════════════
 function connectROS() {
-  try {
-    ros = new WebSocket('ws://localhost:9090');
-  } catch(e) {
-    setTimeout(connectROS, 3000);
-    return;
-  }
-
+  try { ros = new WebSocket('ws://localhost:9090'); }
+  catch(e) { setTimeout(connectROS, 3000); return; }
   ros.onopen = () => {
     connected = true;
     document.getElementById('conn-dot').classList.add('connected');
     document.getElementById('conn-label').textContent = 'CONNECTED';
-
-    subscribeJointStates();
-
+    ros.send(JSON.stringify({op:'subscribe', topic:'/joint_states', type:'sensor_msgs/JointState'}));
     clearInterval(freqInterval);
     freqInterval = setInterval(() => {
-      const now = Date.now();
-      const freq = msgCount;
+      document.getElementById('hdr-freq').textContent = msgCount;
       msgCount = 0;
-      document.getElementById('hdr-freq').textContent = freq;
     }, 1000);
   };
-
   ros.onclose = () => {
     connected = false;
     document.getElementById('conn-dot').classList.remove('connected');
@@ -1250,310 +896,340 @@ function connectROS() {
     clearInterval(freqInterval);
     setTimeout(connectROS, 3000);
   };
-
-  ros.onerror = () => {
-    ros.close();
-  };
-
+  ros.onerror = () => ros.close();
   ros.onmessage = (evt) => {
-    const msg = JSON.parse(evt.data);
-    handleROSMessage(msg);
+    const m = JSON.parse(evt.data);
+    if(m.op === 'publish' && m.topic === '/joint_states'){
+      const data = m.msg;
+      if(data.position && data.position.length >= 6){
+        msgCount++;
+        const t0 = Date.now();
+        currentJoints = data.position.slice(0,6);
+        updateArmVisuals(currentJoints, null);
+        updateJointBars(currentJoints);
+        document.getElementById('hdr-lat').textContent = Date.now()-t0;
+      }
+    }
   };
 }
-
 function rosPublish(topic, type, msg) {
   if(!connected) return;
   const t0 = Date.now();
-  const payload = {op:'publish', topic, msg};
-  ros.send(JSON.stringify(payload));
-  document.getElementById('hdr-lat').textContent = (Date.now()-t0);
+  ros.send(JSON.stringify({op:'publish', topic, msg}));
+  document.getElementById('hdr-lat').textContent = Date.now()-t0;
 }
 
-function subscribeJointStates() {
-  const sub = {
-    op: 'subscribe',
-    topic: '/joint_states',
-    type: 'sensor_msgs/JointState'
-  };
-  ros.send(JSON.stringify(sub));
-}
-
-function handleROSMessage(msg) {
-  if(msg.op === 'publish' && msg.topic === '/joint_states'){
-    const data = msg.msg;
-    if(data.position && data.position.length >= 6){
-      msgCount++;
-      const t0 = Date.now();
-      currentJoints = data.position.slice(0,6);
-      const targetPositions = dhFK(currentJoints); // show ghost
-      updateArmVisuals(currentJoints, null);
-      updateJointBars(currentJoints);
-      document.getElementById('hdr-lat').textContent = Date.now()-t0;
-    }
-  }
-}
-
-// ════════════════════════════════════════════════
-//  JOINT BAR READOUT
-// ════════════════════════════════════════════════
 function buildJointReadout() {
-  const container = document.getElementById('joint-readout');
-  container.innerHTML = '';
+  const c = document.getElementById('joint-readout');
+  c.innerHTML = '';
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
   for(let i=0;i<6;i++){
     const col = document.createElement('div');
-    col.className='joint-col';
-    col.innerHTML=`
-      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-align:center">J${i+1}</div>
-      <div class="joint-bar-track"><div class="joint-bar-fill" id="jbar-${i}" style="width:50%"></div></div>
-      <div class="joint-val" id="jval-${i}">0.00</div>
+    col.className='joint';
+    col.innerHTML = `
+      <div class="joint-gauge">
+        <svg viewBox="0 0 56 56">
+          <circle class="bg" cx="28" cy="28" r="${radius}" stroke-width="3" fill="none"/>
+          <circle class="fg" id="jarc-${i}" cx="28" cy="28" r="${radius}" stroke-width="3" fill="none"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${circumference/2}"/>
+        </svg>
+        <div class="joint-gauge-text" id="jpct-${i}">0%</div>
+      </div>
+      <div class="joint-info">
+        <div class="name">J${i+1}</div>
+        <div class="deg" id="jval-${i}">0.0°</div>
+      </div>
     `;
-    container.appendChild(col);
+    c.appendChild(col);
   }
 }
 buildJointReadout();
 
 function updateJointBars(joints) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
   for(let i=0;i<6;i++){
     const [min,max] = JOINT_LIMITS[i];
     const range = max - min;
-    const pct = ((joints[i]-min)/range)*100;
-    const bar = document.getElementById(`jbar-${i}`);
-    const val = document.getElementById(`jval-${i}`);
-    bar.style.width = Math.max(0,Math.min(100,pct))+'%';
-
-    const absRatio = Math.abs(joints[i]) / Math.max(Math.abs(min),Math.abs(max));
-    bar.className = 'joint-bar-fill' + (absRatio>0.9?' danger':(absRatio>0.75?' warn':''));
-    val.textContent = (joints[i]*180/Math.PI).toFixed(1)+'°';
-
-    // if(i < 3){
-    //   document.getElementById(`live-r`).textContent = (joints[3]*180/Math.PI).toFixed(2);
-    //   document.getElementById(`live-p`).textContent = (joints[4]*180/Math.PI).toFixed(2);
-    //   document.getElementById(`live-yw`).textContent= (joints[5]*180/Math.PI).toFixed(2);
-    // }
+    const norm = (joints[i]-min)/range;
+    const offset = circumference - (circumference * norm);
+    const arc = document.getElementById(`jarc-${i}`);
+    arc.style.strokeDashoffset = offset;
+    const absRatio = Math.abs(joints[i]) / Math.max(Math.abs(min), Math.abs(max));
+    arc.classList.remove('warn','danger');
+    if (absRatio > 0.9) arc.classList.add('danger');
+    else if (absRatio > 0.75) arc.classList.add('warn');
+    document.getElementById(`jval-${i}`).textContent = (joints[i]*180/Math.PI).toFixed(1)+'°';
+    document.getElementById(`jpct-${i}`).textContent = Math.round(norm*100)+'%';
   }
 }
 
-// ════════════════════════════════════════════════
-//  COMMANDS
-// ════════════════════════════════════════════════
 function eulerToQuat(roll,pitch,yaw){
-  const cr=Math.cos(roll/2), sr=Math.sin(roll/2);
+  const cr=Math.cos(roll/2),sr=Math.sin(roll/2);
   const cp=Math.cos(pitch/2),sp=Math.sin(pitch/2);
-  const cy=Math.cos(yaw/2),  sy=Math.sin(yaw/2);
-  return {
-    x: sr*cp*cy - cr*sp*sy,
-    y: cr*sp*cy + sr*cp*sy,
-    z: cr*cp*sy - sr*sp*cy,
-    w: cr*cp*cy + sr*sp*sy
-  };
+  const cy=Math.cos(yaw/2),sy=Math.sin(yaw/2);
+  return { x: sr*cp*cy-cr*sp*sy, y: cr*sp*cy+sr*cp*sy, z: cr*cp*sy-sr*sp*cy, w: cr*cp*cy+sr*sp*sy };
 }
-
 function sendPose(pose, force) {
   const p = pose || getControlValues();
   const speed = parseFloat(document.getElementById('speed-slider').value);
-
-  // Throttle: minimum interval between publishes scales inversely with speed.
-  // speed 1.0× → 50 ms interval (20 Hz)
-  // speed 0.1× → 500 ms interval (2 Hz)
-  // speed 2.0× → 25 ms interval (40 Hz)
-  // `force` (e.g. button clicks) bypasses the throttle.
   const minInterval = 50 / speed;
   const now = Date.now();
-  if (!force && (now - lastSendTime) < minInterval) return;
+  if(!force && (now - lastSendTime) < minInterval) return;
   lastSendTime = now;
-
   const q = eulerToQuat(p.roll, p.pitch, p.yaw);
-  const msg = {
-    position: {x:p.x, y:p.y, z:p.z},
-    orientation: q
-  };
+  rosPublish('/target_pose', 'geometry_msgs/Pose', { position: {x:p.x, y:p.y, z:p.z}, orientation: q });
 
-  rosPublish('/target_pose', 'geometry_msgs/Pose', msg);
+  if (typeof isRecording !== 'undefined' && isRecording) recordFrame(p);
 
-  document.getElementById('ik-badge').textContent = 'IK SOLVING';
-  document.getElementById('ik-badge').style.color = 'var(--warn)';
-  setTimeout(() => {
-    document.getElementById('ik-badge').textContent = 'IK OK';
-    document.getElementById('ik-badge').style.color = 'var(--accent)';
-  }, 600);
+  const ik = document.getElementById('ik-badge');
+  ik.textContent = 'IK Solving'; ik.className='pill warn';
+  setTimeout(() => { ik.textContent = 'IK OK'; ik.className='pill info'; }, 600);
 }
-
-function goHome() {
-  setControlValues({x:0.615,y:0.0,z:0.55,roll:0,pitch:0,yaw:0});
-  sendPose(null, true);
-}
-
-function goZero() {
-  setControlValues({x:0.5,y:0.0,z:0.4,roll:0,pitch:0,yaw:0});
-  sendPose(null, true);
-}
-
-// function eStop() {
-//   trajCancelled = true;
-//   // Publish zero velocity or re-send current pose
-//   rosPublish('/target_pose','geometry_msgs/Pose',{
-//     position:{x:currentJoints[0],y:currentJoints[1],z:currentJoints[2]},
-//     orientation:{x:0,y:0,z:0,w:1}
-//   });
-//   document.getElementById('traj-status').textContent = '⚠ E-STOP TRIGGERED';
-//   document.getElementById('traj-status').style.color = 'var(--danger)';
-// }
-
+function goHome() { setControlValues({x:0.615,y:0.0,z:0.55,roll:0,pitch:0,yaw:0}); sendPose(null, true); }
+function goZero() { setControlValues({x:0.5,y:0.0,z:0.4,roll:0,pitch:0,yaw:0}); sendPose(null, true); }
 function eStop() {
   trajCancelled = true;
-
-  // Compute current EE position from FK on the current joint angles,
-  // then re-target it. This freezes the arm at exactly where it is now.
-  const positions = dhFK(currentJoints);
-  const ee = positions[6];
-
-  // Convert from Three.js axes (rx, rz, -ry) back to ROS axes (x, y, z)
-  const ros_x = ee.x;
-  const ros_y = -ee.z;
-  const ros_z = ee.y;
-
+  const ee = dhFK(currentJoints)[6];
   rosPublish('/target_pose', 'geometry_msgs/Pose', {
-    position:    { x: ros_x, y: ros_y, z: ros_z },
-    orientation: { x: 0, y: 0, z: 0, w: 1 }
+    position: { x: ee.x, y: -ee.z, z: ee.y },
+    orientation: { x:0, y:0, z:0, w:1 }
   });
-
   document.getElementById('traj-status').textContent = '⚠ E-STOP TRIGGERED';
   document.getElementById('traj-status').style.color = 'var(--danger)';
 }
 
-// ════════════════════════════════════════════════
-//  PRESETS
-// ════════════════════════════════════════════════
 function loadPreset(key) {
   const p = key==='home' ? presets.home : key==='zero' ? presets.zero : customPresets[key];
   if(!p) return;
-  setControlValues(p);
-  sendPose(p, true);
+  setControlValues(p); sendPose(p, true);
 }
-
 function saveCurrentAsPreset(slot) {
   pendingPresetSlot = slot;
   document.getElementById('preset-name-input').value = '';
   document.getElementById('modal').classList.add('show');
   document.getElementById('preset-name-input').focus();
 }
-
 function confirmSavePreset() {
   const name = document.getElementById('preset-name-input').value.trim() || `SLOT ${pendingPresetSlot+1}`;
-  const pose = {...getControlValues(), name};
-  customPresets[pendingPresetSlot-2] = pose;
-
+  customPresets[pendingPresetSlot-2] = {...getControlValues(), name};
   const btn = document.getElementById(`ps${pendingPresetSlot}`);
-  btn.className = 'preset-btn';
+  btn.className = 'preset';
   btn.innerHTML = `<span class="icon">★</span>${name.toUpperCase().slice(0,8)}`;
   btn.onclick = () => loadPreset(pendingPresetSlot);
-
   closeModal();
 }
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
-}
-
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
 document.getElementById('preset-name-input').addEventListener('keydown', e => {
   if(e.key==='Enter') confirmSavePreset();
   if(e.key==='Escape') closeModal();
 });
 
-// ════════════════════════════════════════════════
-//  TRAJECTORY BUILDER
-// ════════════════════════════════════════════════
-function addWaypoint() {
-  const pose = getControlValues();
-  waypoints.push({...pose});
-  renderWaypoints();
-}
-
-function clearWaypoints() {
-  waypoints = [];
-  renderWaypoints();
-  trajCancelled = false;
-}
-
+function addWaypoint() { waypoints.push({...getControlValues()}); renderWaypoints(); }
+function clearWaypoints() { waypoints = []; renderWaypoints(); trajCancelled = false; }
 function renderWaypoints() {
   const list = document.getElementById('waypoint-list');
   list.innerHTML = '';
   waypoints.forEach((wp,i) => {
     const div = document.createElement('div');
-    div.className = 'waypoint-item';
-    div.id = `wp-${i}`;
-    div.innerHTML = `
-      <span class="wp-num">${String(i+1).padStart(2,'0')}</span>
-      <span class="wp-coords">X:${wp.x.toFixed(2)} Y:${wp.y.toFixed(2)} Z:${wp.z.toFixed(2)}</span>
-      <button class="wp-del" onclick="deleteWaypoint(${i})">×</button>
-    `;
-    // Click to preview
-    div.addEventListener('click', (e) => {
-      if(e.target.classList.contains('wp-del')) return;
-      setControlValues(wp);
-    });
+    div.className = 'wp'; div.id = `wp-${i}`;
+    div.innerHTML = `<span class="wp-num">${String(i+1).padStart(2,'0')}</span><span class="wp-coords">${wp.x.toFixed(2)} · ${wp.y.toFixed(2)} · ${wp.z.toFixed(2)}</span><button class="wp-del" onclick="deleteWaypoint(${i})">×</button>`;
+    div.addEventListener('click', (e) => { if(e.target.classList.contains('wp-del')) return; setControlValues(wp); });
     list.appendChild(div);
   });
-  document.getElementById('traj-status').textContent =
-    waypoints.length === 0 ? 'No waypoints loaded' : `${waypoints.length} waypoint(s) ready`;
-  document.getElementById('traj-status').style.color = 'var(--muted)';
+  document.getElementById('traj-status').textContent = waypoints.length === 0 ? 'No waypoints loaded' : `${waypoints.length} waypoint(s) ready`;
+  document.getElementById('traj-status').style.color = 'var(--text-3)';
 }
-
-function deleteWaypoint(i) {
-  waypoints.splice(i,1);
-  renderWaypoints();
-}
-
+function deleteWaypoint(i) { waypoints.splice(i,1); renderWaypoints(); }
 async function executeTrajectory() {
-  if(waypoints.length === 0) {
-    document.getElementById('traj-status').textContent = '⚠ No waypoints to execute';
-    return;
-  }
+  if(waypoints.length === 0) { document.getElementById('traj-status').textContent = '⚠ No waypoints'; return; }
   if(trajRunning) return;
-
-  trajRunning = true;
-  trajCancelled = false;
+  trajRunning = true; trajCancelled = false;
   const dwell = parseFloat(document.getElementById('dwell-slider').value)*1000;
   const loop = document.getElementById('loop-traj').checked;
   const status = document.getElementById('traj-status');
-
   do {
     for(let i=0;i<waypoints.length;i++){
       if(trajCancelled) break;
-
-      // Highlight active waypoint
-      document.querySelectorAll('.waypoint-item').forEach(el=>el.classList.remove('active'));
+      document.querySelectorAll('.wp').forEach(el=>el.classList.remove('active'));
       const el = document.getElementById(`wp-${i}`);
       if(el) el.classList.add('active');
-
       status.textContent = `Executing waypoint ${i+1}/${waypoints.length}`;
-      status.style.color = 'var(--accent3)';
-
-      setControlValues(waypoints[i]);
-      sendPose(waypoints[i], true);
+      status.style.color = 'var(--green)';
+      setControlValues(waypoints[i]); sendPose(waypoints[i], true);
       await sleep(400 + dwell);
     }
     if(trajCancelled) break;
   } while(loop && !trajCancelled);
-
-  document.querySelectorAll('.waypoint-item').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.wp').forEach(el=>el.classList.remove('active'));
   status.textContent = trajCancelled ? '⚠ Trajectory cancelled' : '✓ Trajectory complete';
-  status.style.color = trajCancelled ? 'var(--danger)' : 'var(--accent3)';
+  status.style.color = trajCancelled ? 'var(--danger)' : 'var(--green)';
   trajRunning = false;
 }
-
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
-// ════════════════════════════════════════════════
-//  KEYBOARD SHORTCUTS
-// ════════════════════════════════════════════════
-window.addEventListener('keydown', e => {
-  // Ignore if typing in input
-  if(e.target.tagName==='INPUT') return;
+let isRecording = false;
+let recordingFrames = [];
+let recordStartTime = 0;
+let isPlaying = false;
+let playbackTimeouts = [];
+let recDurationInterval = null;
 
+function updateRecorderUI() {
+  const led      = document.getElementById('rec-led');
+  const recBtn   = document.getElementById('rec-btn');
+  const playBtn  = document.getElementById('play-btn');
+  const frames   = document.getElementById('rec-frames');
+  const time     = document.getElementById('rec-time');
+  if (!led) return;
+
+  led.className = 'rec-led';
+  if (isRecording) led.classList.add('recording');
+  else if (isPlaying) led.classList.add('playing');
+
+  recBtn.textContent = isRecording ? '■ Stop Rec' : '● Record';
+  playBtn.textContent = isPlaying ? '■ Stop Play' : '▶ Play';
+  playBtn.disabled = recordingFrames.length === 0 && !isPlaying;
+
+  frames.textContent = `${recordingFrames.length} frame${recordingFrames.length !== 1 ? 's' : ''}`;
+
+  let secs;
+  if (isRecording) secs = (Date.now() - recordStartTime) / 1000;
+  else if (recordingFrames.length > 0) secs = recordingFrames[recordingFrames.length - 1].dt / 1000;
+  else secs = 0;
+  time.textContent = secs.toFixed(1) + ' s';
+}
+
+function toggleRecording() {
+  if (isPlaying) stopPlayback();
+  if (isRecording) {
+    isRecording = false;
+    clearInterval(recDurationInterval);
+  } else {
+    recordingFrames = [];
+    isRecording = true;
+    recordStartTime = Date.now();
+    recordingFrames.push({ dt: 0, pose: getControlValues() });
+    recDurationInterval = setInterval(updateRecorderUI, 100);
+  }
+  updateRecorderUI();
+}
+
+function recordFrame(pose) {
+  if (!isRecording) return;
+  recordingFrames.push({
+    dt: Date.now() - recordStartTime,
+    pose: { x:pose.x, y:pose.y, z:pose.z, roll:pose.roll, pitch:pose.pitch, yaw:pose.yaw }
+  });
+}
+
+function togglePlayback() {
+  if (isRecording) toggleRecording();
+  if (isPlaying) stopPlayback();
+  else playRecording();
+}
+
+function playRecording() {
+  if (recordingFrames.length === 0) return;
+  isPlaying = true;
+  playbackTimeouts = [];
+  const speed = parseFloat(document.getElementById('playback-speed').value);
+  const loop  = document.getElementById('rec-loop').checked;
+
+  function playOnce() {
+    recordingFrames.forEach(frame => {
+      const t = setTimeout(() => {
+        setControlValues(frame.pose);
+        sendPose(frame.pose, true);
+      }, frame.dt / speed);
+      playbackTimeouts.push(t);
+    });
+    const last = recordingFrames[recordingFrames.length - 1];
+    const endT = setTimeout(() => {
+      if (loop && isPlaying) {
+        playbackTimeouts = [];
+        playOnce();
+      } else {
+        isPlaying = false;
+        updateRecorderUI();
+      }
+    }, last.dt / speed + 200);
+    playbackTimeouts.push(endT);
+  }
+
+  playOnce();
+  updateRecorderUI();
+}
+
+function stopPlayback() {
+  playbackTimeouts.forEach(t => clearTimeout(t));
+  playbackTimeouts = [];
+  isPlaying = false;
+  updateRecorderUI();
+}
+
+function clearRecording() {
+  if (isPlaying) stopPlayback();
+  if (isRecording) toggleRecording();
+  recordingFrames = [];
+  updateRecorderUI();
+}
+
+function saveRecording() {
+  if (recordingFrames.length === 0) { alert('Nothing to save — record something first.'); return; }
+  const data = JSON.stringify({
+    version: 1,
+    timestamp: new Date().toISOString(),
+    duration_ms: recordingFrames[recordingFrames.length - 1].dt,
+    frame_count: recordingFrames.length,
+    frames: recordingFrames
+  }, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `arm-recording-${new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function loadRecording(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.frames || !Array.isArray(data.frames)) throw new Error('Invalid format');
+      if (isPlaying) stopPlayback();
+      if (isRecording) toggleRecording();
+      recordingFrames = data.frames;
+      updateRecorderUI();
+    } catch(err) {
+      alert('Invalid recording file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetPlaybackPosition() {
+  if (recordingFrames.length === 0) return;
+  setControlValues(recordingFrames[0].pose);
+  sendPose(recordingFrames[0].pose, true);
+}
+
+document.getElementById('playback-speed').addEventListener('input', function() {
+  document.getElementById('playback-speed-val').textContent = parseFloat(this.value).toFixed(2) + '×';
+});
+
+updateRecorderUI();
+
+window.addEventListener('keydown', e => {
+  if(e.target.tagName==='INPUT') return;
   const step = 0.01;
   const pose = getControlValues();
-
   if(e.key==='ArrowUp')    { pose.z = Math.min(1.2, pose.z+step); setControlValues(pose); }
   if(e.key==='ArrowDown')  { pose.z = Math.max(0,   pose.z-step); setControlValues(pose); }
   if(e.key==='ArrowLeft')  { pose.y = Math.max(-1,  pose.y-step); setControlValues(pose); }
@@ -1565,28 +1241,17 @@ window.addEventListener('keydown', e => {
   if(e.key==='Escape')     { eStop(); closeModal(); }
 });
 
-// ════════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════════
 setControlValues(targetPose);
 updateArmVisuals(currentJoints, null);
 connectROS();
 
-// Demo: animate arm slowly if not connected after 2s
 setTimeout(()=>{
   if(!connected){
     let t = 0;
     const demoInterval = setInterval(()=>{
       if(connected){ clearInterval(demoInterval); return; }
       t += 0.01;
-      const demoJoints = [
-        Math.sin(t)*0.4,
-        Math.sin(t*0.7)*0.3,
-        Math.sin(t*0.5)*0.3,
-        Math.cos(t*0.8)*0.5,
-        Math.sin(t*1.1)*0.3,
-        0
-      ];
+      const demoJoints = [Math.sin(t)*0.4, Math.sin(t*0.7)*0.3, Math.sin(t*0.5)*0.3, Math.cos(t*0.8)*0.5, Math.sin(t*1.1)*0.3, 0];
       updateArmVisuals(demoJoints, null);
       updateJointBars(demoJoints);
     }, 30);

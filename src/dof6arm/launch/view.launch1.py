@@ -9,7 +9,7 @@ def generate_launch_description():
     urdf_file = PathJoinSubstitution([
         FindPackageShare('dof6arm'),
         'urdf',
-        'dof6arm.urdf'
+        'dof6arminmm.urdf'
     ])
     
     rviz_config = PathJoinSubstitution([
